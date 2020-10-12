@@ -9,6 +9,8 @@ import {
   TxWitnessKeys,
 } from './types'
 
+const util = require('util')
+
 const cbor = require('borc')
 const { blake2b } = require('cardano-crypto.js')
 
@@ -24,10 +26,14 @@ function TxShelleyWitness(publicKey: Buffer, signature: Buffer): TxWitnessShelle
 
 function TxAux(unsignedTxCborHex: UnsignedTxCborHex) {
   const unsignedTxDecoded:UnsignedTxDecoded = cbor.decode(unsignedTxCborHex)
+  // console.log(util.inspect(unsignedTxDecoded, false, null, true))
+  // console.log(JSON.stringify(unsignedTxDecoded))
   const parsedTx = parseUnsignedTx(unsignedTxDecoded)
-
+  // console.log(util.inspect(parsedTx, false, null, true))
+  // console.log(JSON.stringify(parsedTx))
   function getId(): string {
     const [txBody] = unsignedTxDecoded
+
     const encodedTxBody = cbor.encode(txBody)
     return blake2b(
       encodedTxBody,
