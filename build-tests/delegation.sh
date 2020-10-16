@@ -22,7 +22,7 @@ sudo cardano-hw-cli shelley address key-gen \
 --hw-signing-file stake.hwsfile
 echo ""
 
-echo "[cardano-hw-cli] Building address file"
+echo "[cardano-cli] Building address file"
 cardano-cli shelley address build \
 --payment-verification-key-file payment.vkey \
 --stake-verification-key-file stake.vkey \
@@ -30,7 +30,7 @@ cardano-cli shelley address build \
 --mainnet
 echo ""
 
-echo "[cardano-hw-cli] Get utxos"
+echo "[cardano-cli] Get utxos"
 utxo=$(cardano-cli shelley query utxo \
 --address $(cat payment.addr) \
 --mainnet \
