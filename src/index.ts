@@ -1,6 +1,8 @@
+/* eslint-disable no-console */
 import { parse } from './command-parser/commandParser'
 import { CommandExecutor } from './commandExecutor'
 import { getErrorTranslation } from './errors'
+import NamedError from './namedError'
 import { CommandType, ParsedArguments } from './types'
 
 const executeCommand = async (parsedArgs: ParsedArguments) => {
@@ -25,17 +27,25 @@ const executeCommand = async (parsedArgs: ParsedArguments) => {
         await commandExecutor.createTxWitness(parsedArgs)
         break
       default:
-        throw Error('UndefinedCommand')
+        throw NamedError('UndefinedCommandError')
     }
   }
 }
 
-const parsedArgs = parse(process.argv)
-
-executeCommand(parsedArgs).catch((e) => {
-  // eslint-disable-next-line no-console
+const printError = (e: Error) => {
   console.log(getErrorTranslation(e))
-  // get help for command
-}).finally(() => {
-  process.exit()
-})
+  console.log(e.stack)
+}
+
+try {
+  const parsedArgs = parse(process.argv)
+
+  executeCommand(parsedArgs).catch((e) => {
+    printError(e)
+    // get help for command
+  }).finally(() => {
+    process.exit()
+  })
+} catch (e) {
+  printError(e)
+}

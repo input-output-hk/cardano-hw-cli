@@ -1,5 +1,6 @@
 import { HARDENED_THRESHOLD, NETWORKS } from '../constants'
 import { isBIP32Path, isHwSigningData, isTxBodyData } from '../guards'
+import NamedError from '../namedError'
 import {
   BIP32Path,
   HwSigningData, HwSigningType, TxBodyData,
@@ -24,7 +25,7 @@ export const parsePath = (
       ? parseInt(arg.slice(0, -1), 10) + HARDENED_THRESHOLD
       : parseInt(arg, 10)))
   if (isBIP32Path(parsedPath)) return parsedPath
-  throw new Error('Invalid path')
+  throw NamedError('InvalidPathError', { message: path })
 }
 
 export const parseFileTypeMagic = (fileTypeMagic: string, path: string) => {
@@ -35,7 +36,7 @@ export const parseFileTypeMagic = (fileTypeMagic: string, path: string) => {
   if (fileTypeMagic.startsWith('Stake')) {
     return HwSigningType.Stake
   }
-  throw new Error(`Invalid file type of hw-signing-file at ${path}`)
+  throw NamedError('InvalidFileTypeError', { message: path })
 }
 
 export const parseHwSigningFile = (path: string): HwSigningData => {
@@ -48,7 +49,7 @@ export const parseHwSigningFile = (path: string): HwSigningData => {
   if (isHwSigningData(result)) {
     return result
   }
-  throw new Error(`Invalid file contents of hw-signing-file at ${path}'`)
+  throw NamedError('InvalidHwSigningFileError', { message: path })
 }
 
 export const parseTxBodyFile = (path: string): TxBodyData => {
@@ -58,5 +59,5 @@ export const parseTxBodyFile = (path: string): TxBodyData => {
   if (isTxBodyData(parsedData)) {
     return parsedData
   }
-  throw new Error(`Invalid file contents of tx-body-file at ${path}'`)
+  throw NamedError('InvalidTxBodyFileError', { message: path })
 }

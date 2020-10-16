@@ -1,3 +1,4 @@
+import NamedError from '../namedError'
 import {
   TxByronWitness,
   TxShelleyWitness,
@@ -177,7 +178,7 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
     )
 
     if (response.txHashHex !== txAux.getId()) {
-      throw new Error('Tx serialization mismatch')
+      throw NamedError('TxSerializationMismatchError')
     }
 
     return response.witnesses.map((witness: any) => ({
@@ -199,7 +200,7 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
     ): HwSigningData => {
       const hwSigningData = signingFiles.find((signingFile) => pathEquals(signingFile.path, path))
       if (hwSigningData) return hwSigningData
-      throw new Error(`Can not find hw signing data with path ${path}`)
+      throw NamedError('MissingHwSigningDataAtPathError', { message: path.toString() })
     }
 
     const byronWitnesses = ledgerWitnesses
@@ -239,7 +240,7 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
       { data: shelleyWitness }
     ) as _ShelleyWitness)
 
-    if (_byronWitnesses.length + _shelleyWitnesses.length !== 1) throw new Error('Multiple witnesses found')
+    if (_byronWitnesses.length + _shelleyWitnesses.length !== 1) throw NamedError('MultipleWitnessesError')
     return _shelleyWitnesses.length === 1 ? _shelleyWitnesses[0] : _byronWitnesses[0]
   }
 

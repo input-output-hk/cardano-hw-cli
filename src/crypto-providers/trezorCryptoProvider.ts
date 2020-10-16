@@ -33,6 +33,7 @@ import {
   getChangeAddress,
   getSigningPath,
 } from './util'
+import NamedError from '../namedError'
 
 const TrezorConnect = require('trezor-connect').default
 
@@ -139,7 +140,7 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
       case TxCertificateKeys.STAKEPOOL_REGISTRATION:
         return prepareStakePoolRegistrationCert(certificate, stakeSigningFiles)
       default:
-        throw Error('UnknownCertificateTypeError')
+        throw NamedError('UnknownCertificateTypeError')
     }
   }
 
