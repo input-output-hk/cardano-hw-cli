@@ -1,6 +1,6 @@
 /node_modules
 /dist
 /build/cardano-hw-cli
-/dist
 /build/package.json
+/build/linux
 .vscode
