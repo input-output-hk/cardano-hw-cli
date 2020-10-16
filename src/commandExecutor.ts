@@ -14,40 +14,35 @@ import {
   ParsedVerificationKeyArguments,
 } from './types'
 import { LedgerCryptoProvider } from './crypto-providers/ledgerCryptoProvider'
-// import { TrezorCryptoProvider } from './crypto-providers/trezorCryptoProvider'
+import { TrezorCryptoProvider } from './crypto-providers/trezorCryptoProvider'
 import { validateUnsignedTx } from './crypto-providers/util'
 
-// const promiseTimeout = <T> (promise: Promise<T>, ms: number): Promise<T> => {
-//   const timeout: Promise<T> = new Promise((resolve, reject) => {
-//     const id = setTimeout(() => {
-//       clearTimeout(id)
-//       reject(new Error(`Promise timed out in ${ms} ms`))
-//     }, ms)
-//   })
+const promiseTimeout = <T> (promise: Promise<T>, ms: number): Promise<T> => {
+  const timeout: Promise<T> = new Promise((resolve, reject) => {
+    const id = setTimeout(() => {
+      clearTimeout(id)
+      reject(new Error(`Promise timed out in ${ms} ms`))
+    }, ms)
+  })
 
-//   return Promise.race([
-//     promise,
-//     timeout,
-//   ])
-// }
+  return Promise.race([
+    promise,
+    timeout,
+  ])
+}
 
-// const getCryptoProvider = async (): Promise<CryptoProvider> => {
-//   try {
-//     const ledgerCryptoProvider = await promiseTimeout(LedgerCryptoProvider(), 5000)
-//     return ledgerCryptoProvider
-//   } catch (ledgerError) {
-//     try {
-//       const trezorCryptoProvider = await promiseTimeout(TrezorCryptoProvider(), 5000)
-//       return trezorCryptoProvider
-//     } catch (trezorError) {
-//       console.log(ledgerError)
-//       console.log(trezorError)
-//     }
-//   }
-//   throw new Error('Hardware wallet transport not found')
-// }
+const getCryptoProvider = async (): Promise<CryptoProvider> => {
+  const cryptoProviderPromise = Promise.race([
+    LedgerCryptoProvider(),
+    TrezorCryptoProvider(),
+  ])
 
-const getCryptoProvider = async (): Promise<CryptoProvider> => LedgerCryptoProvider()
+  try {
+    return await promiseTimeout(cryptoProviderPromise, 5000)
+  } catch (e) {
+    throw Error('HwTransportNotFoundError')
+  }
+}
 
 const CommandExecutor = async () => {
   const cryptoProvider: CryptoProvider = await getCryptoProvider()

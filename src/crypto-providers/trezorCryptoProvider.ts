@@ -41,12 +41,7 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
     email: 'todo',
     appUrl: 'todo',
   })
-  // const { payload: features } = await TrezorConnect.getFeatures()
-  // const {
-  //   major_version: major,
-  //   minor_version: minor,
-  //   patch_version: patch,
-  // } = features
+  await TrezorConnect.getFeatures()
 
   async function getXPubKey(path: BIP32Path): Promise<string> {
     const { payload } = await TrezorConnect.cardanoGetPublicKey({
