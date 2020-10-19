@@ -44,7 +44,7 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
   })
   await TrezorConnect.getFeatures()
 
-  async function getXPubKey(path: BIP32Path): Promise<string> {
+  const getXPubKey = async (path: BIP32Path): Promise<string> => {
     const { payload } = await TrezorConnect.cardanoGetPublicKey({
       path,
       showOnTrezor: false,
@@ -52,33 +52,29 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
     return payload.publicKey
   }
 
-  function prepareInput(input: _Input, path?: BIP32Path): TrezorInput {
-    return {
-      path,
-      prev_hash: input.txHash.toString('hex'),
-      prev_index: input.outputIndex,
-    }
-  }
+  const prepareInput = (input: _Input, path?: BIP32Path): TrezorInput => ({
+    path,
+    prev_hash: input.txHash.toString('hex'),
+    prev_index: input.outputIndex,
+  })
 
-  function prepareChangeOutput(
+  const prepareChangeOutput = (
     coins: number,
     changeAddress: _AddressParameters,
-  ) {
-    return {
-      amount: `${coins}`,
-      addressParameters: {
-        addressType: changeAddress.addressType,
-        path: changeAddress.paymentPath,
-        stakingPath: changeAddress.stakePath,
-      },
-    }
-  }
+  ) => ({
+    amount: `${coins}`,
+    addressParameters: {
+      addressType: changeAddress.addressType,
+      path: changeAddress.paymentPath,
+      stakingPath: changeAddress.stakePath,
+    },
+  })
 
-  function prepareOutput(
+  const prepareOutput = (
     output: _Output,
     network: Network,
     changeOutputFiles: HwSigningData[],
-  ): TrezorOutput {
+  ): TrezorOutput => {
     const changeAddress = getChangeAddress(changeOutputFiles, output.address, network)
     const address = encodeAddress(output.address)
     if (changeAddress && !changeAddress.address.compare(output.address)) {
@@ -90,9 +86,9 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
     }
   }
 
-  function prepareStakingKeyRegistrationCert(
+  const prepareStakingKeyRegistrationCert = (
     cert: _Certificate, stakeSigningFiles: HwSigningData[],
-  ): TrezorCertificate {
+  ): TrezorCertificate => {
     if (
       !isStakingKeyRegistrationCertificate(cert) && !isStakingKeyDeregistrationCertificate(cert)
     ) throw Error()
@@ -103,9 +99,9 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
     }
   }
 
-  function prepareDelegationCert(
+  const prepareDelegationCert = (
     cert: _Certificate, stakeSigningFiles: HwSigningData[],
-  ): TrezorCertificate {
+  ): TrezorCertificate => {
     if (!isDelegationCertificate(cert)) throw Error()
     const path = findSigningPath(cert.pubKeyHash, stakeSigningFiles)
     return {
@@ -115,9 +111,9 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
     }
   }
 
-  function prepareStakePoolRegistrationCert(
+  const prepareStakePoolRegistrationCert = (
     cert: _Certificate, stakeSigningFiles: HwSigningData[],
-  ): TrezorCertificate {
+  ): TrezorCertificate => {
     if (!isStakepoolRegistrationCertificate(cert)) throw Error()
     const path = findSigningPath(cert.ownerPubKeys[0], stakeSigningFiles)
     // TODO: we need to iterate through the owner pubkeys
@@ -127,9 +123,9 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
     }
   }
 
-  function prepareCertificate(
+  const prepareCertificate = (
     certificate: _Certificate, stakeSigningFiles: HwSigningData[],
-  ): TrezorCertificate {
+  ): TrezorCertificate => {
     switch (certificate.type) {
       case TxCertificateKeys.STAKING_KEY_REGISTRATION:
         return prepareStakingKeyRegistrationCert(certificate, stakeSigningFiles)
@@ -144,9 +140,9 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
     }
   }
 
-  function prepareWithdrawal(
+  const prepareWithdrawal = (
     withdrawal: _Withdrawal, stakeSigningFiles: HwSigningData[],
-  ): TrezorWithdrawal {
+  ): TrezorWithdrawal => {
     const pubKeyHash = withdrawal.address.slice(1) // TODO: helper
     const path = findSigningPath(pubKeyHash, stakeSigningFiles)
     return {
@@ -155,12 +151,12 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
     }
   }
 
-  async function signTx(
+  const signTx = async (
     txAux: _TxAux,
     signingFiles: HwSigningData[],
     network: Network,
     changeOutputFiles: HwSigningData[],
-  ): Promise<SignedTxCborHex> {
+  ): Promise<SignedTxCborHex> => {
     const {
       paymentSigningFiles,
       stakeSigningFiles,
@@ -198,12 +194,12 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
     return response.payload.serializedTx as SignedTxCborHex
   }
 
-  async function witnessTx(
+  const witnessTx = async (
     txAux: _TxAux,
     signingFile: HwSigningData,
     network: Network,
     changeOutputFiles: HwSigningData[],
-  ): Promise<_ByronWitness | _ShelleyWitness> {
+  ): Promise<_ByronWitness | _ShelleyWitness> => {
     const signedTx = await signTx(txAux, [signingFile], network, changeOutputFiles)
     return Witness(signedTx)
   }

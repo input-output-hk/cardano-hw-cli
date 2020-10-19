@@ -25,17 +25,15 @@ const write = (path: string, data: OutputData) => fs.writeFileSync(
   'utf8',
 )
 
-function TxSignedOutput(signedTxCborHex: SignedTxCborHex): SignedTxOutput {
-  return {
-    type: 'TxSignedShelley',
-    description: '',
-    cborHex: signedTxCborHex,
-  }
-}
+const TxSignedOutput = (signedTxCborHex: SignedTxCborHex): SignedTxOutput => ({
+  type: 'TxSignedShelley',
+  description: '',
+  cborHex: signedTxCborHex,
+})
 
-function TxWitnessOutput(
+const TxWitnessOutput = (
   { key, data }: _ByronWitness | _ShelleyWitness,
-): WitnessOutput {
+): WitnessOutput => {
   const type = key === TxWitnessKeys.SHELLEY
     ? WitnessOutputTypes.SHELLEY
     : WitnessOutputTypes.BYRON
@@ -46,13 +44,11 @@ function TxWitnessOutput(
   }
 }
 
-function PathOutput(path: BIP32Path): string {
-  return path
-    .map((value) => (value >= HARDENED_THRESHOLD ? `${value - HARDENED_THRESHOLD}H` : `${value}`))
-    .join('/')
-}
+const PathOutput = (path: BIP32Path): string => path
+  .map((value) => (value >= HARDENED_THRESHOLD ? `${value - HARDENED_THRESHOLD}H` : `${value}`))
+  .join('/')
 
-function HwSigningKeyOutput(xPubKey: XPubKeyHex, path: BIP32Path): HwSigningOutput {
+const HwSigningKeyOutput = (xPubKey: XPubKeyHex, path: BIP32Path): HwSigningOutput => {
   const type = path[3] === 0 ? 'Payment' : 'Stake'
   return {
     type: `${type}HWSigningFileShelley_ed25519`, // TODO
@@ -62,7 +58,7 @@ function HwSigningKeyOutput(xPubKey: XPubKeyHex, path: BIP32Path): HwSigningOutp
   }
 }
 
-function HwVerificationKeyOutput(xPubKey: XPubKeyHex, path: BIP32Path): VerificationKeyOutput {
+const HwVerificationKeyOutput = (xPubKey: XPubKeyHex, path: BIP32Path): VerificationKeyOutput => {
   const pubKey = Buffer.from(xPubKey, 'hex').slice(-64).slice(0, 32) // TODO
   const type = path[3] === 0 ? 'Payment' : 'Stake'
   return {

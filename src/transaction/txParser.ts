@@ -13,19 +13,15 @@ import {
   _Certificate,
 } from './types'
 
-function parseTxInputs(txInputs: any[]): _Input[] {
-  return txInputs.map(([txHash, outputIndex]): _Input => (
-    { txHash, outputIndex }
-  ))
-}
+const parseTxInputs = (
+  txInputs: any[],
+): _Input[] => txInputs.map(([txHash, outputIndex]): _Input => ({ txHash, outputIndex }))
 
-function parseTxOutputs(txOutputs: any[]): _Output[] {
-  return txOutputs.map(([address, coins]): _Output => (
-    { address, coins }
-  ))
-}
+const parseTxOutputs = (
+  txOutputs: any[],
+): _Output[] => txOutputs.map(([address, coins]): _Output => ({ address, coins }))
 
-function parseTxCerts(txCertificates: any[]): _Certificate[] {
+const parseTxCerts = (txCertificates: any[]): _Certificate[] => {
   const stakeKeyRegistrationCertParser = (
     [type, [, pubKeyHash]]: any,
   ): _StakingKeyRegistrationCert => ({ type, pubKeyHash })
@@ -83,13 +79,11 @@ function parseTxCerts(txCertificates: any[]): _Certificate[] {
   )
 }
 
-function parseTxWithdrawals(withdrawals: Map<Buffer, number>): _Withdrawal[] {
-  return Array.from(withdrawals).map(([address, coins]): _Withdrawal => (
-    { address, coins }
-  ))
-}
+const parseTxWithdrawals = (
+  withdrawals: Map<Buffer, number>,
+): _Withdrawal[] => Array.from(withdrawals).map(([address, coins]): _Withdrawal => ({ address, coins }))
 
-function parseUnsignedTx([txBody, meta]: _UnsignedTxDecoded): _UnsignedTxParsed {
+const parseUnsignedTx = ([txBody, meta]: _UnsignedTxDecoded): _UnsignedTxParsed => {
   const inputs = parseTxInputs(txBody.get(TxBodyKeys.INPUTS))
   const outputs = parseTxOutputs(txBody.get(TxBodyKeys.OUTPUTS))
   const fee = `${txBody.get(TxBodyKeys.FEE)}`

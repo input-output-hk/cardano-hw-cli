@@ -3,7 +3,7 @@ type OptionalParams = {
   causedBy?: Error
 }
 
-function NamedError(name: string, optionalParams: OptionalParams = {}) {
+const NamedError = (name: string, optionalParams: OptionalParams = {}) => {
   const e = new Error(optionalParams.message || name)
   e.name = name
   e.message = optionalParams.message || ''

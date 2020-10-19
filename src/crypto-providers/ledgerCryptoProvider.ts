@@ -49,31 +49,27 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
   const transport = await TransportNodeHid.create()
   const ledger = new Ledger(transport)
 
-  function prepareInput(input: _Input, path?: BIP32Path): LedgerInput {
-    return {
-      path,
-      txHashHex: input.txHash.toString('hex'),
-      outputIndex: input.outputIndex,
-    }
-  }
+  const prepareInput = (input: _Input, path?: BIP32Path): LedgerInput => ({
+    path,
+    txHashHex: input.txHash.toString('hex'),
+    outputIndex: input.outputIndex,
+  })
 
-  function prepareChangeOutput(
+  const prepareChangeOutput = (
     coins: number,
     changeOutput: _AddressParameters,
-  ): LedgerOutput {
-    return {
-      addressTypeNibble: changeOutput.addressType, // TODO: get from address
-      spendingPath: changeOutput.paymentPath,
-      amountStr: `${coins}`,
-      stakingPath: changeOutput.stakePath,
-    }
-  }
+  ): LedgerOutput => ({
+    addressTypeNibble: changeOutput.addressType, // TODO: get from address
+    spendingPath: changeOutput.paymentPath,
+    amountStr: `${coins}`,
+    stakingPath: changeOutput.stakePath,
+  })
 
-  function prepareOutput(
+  const prepareOutput = (
     output: _Output,
     changeOutputFiles: HwSigningData[],
     network: Network,
-  ): LedgerOutput {
+  ): LedgerOutput => {
     const changeAddress = getChangeAddress(changeOutputFiles, output.address, network)
     if (changeAddress && !changeAddress.address.compare(output.address)) {
       return prepareChangeOutput(output.coins, changeAddress)
@@ -84,9 +80,9 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
     }
   }
 
-  function prepareStakingKeyRegistrationCert(
+  const prepareStakingKeyRegistrationCert = (
     cert: _Certificate, stakeSigningFiles: HwSigningData[],
-  ): LedgerCertificate {
+  ): LedgerCertificate => {
     if (
       !isStakingKeyRegistrationCertificate(cert) && !isStakingKeyDeregistrationCertificate(cert)
     ) throw Error()
@@ -97,9 +93,9 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
     }
   }
 
-  function prepareDelegationCert(
+  const prepareDelegationCert = (
     cert: _Certificate, stakeSigningFiles: HwSigningData[],
-  ): LedgerCertificate {
+  ): LedgerCertificate => {
     if (!isDelegationCertificate(cert)) throw Error()
     const path = findSigningPath(cert.pubKeyHash, stakeSigningFiles)
     return {
@@ -109,9 +105,9 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
     }
   }
 
-  function prepareStakePoolRegistrationCert(
+  const prepareStakePoolRegistrationCert = (
     cert: _Certificate, stakeSigningFiles: HwSigningData[],
-  ): LedgerCertificate {
+  ): LedgerCertificate => {
     if (!isStakepoolRegistrationCertificate(cert)) throw Error()
     const path = findSigningPath(cert.ownerPubKeys[0], stakeSigningFiles)
     // TODO: we need to iterate through the owner pubkeys
@@ -121,9 +117,9 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
     }
   }
 
-  function prepareCertificate(
+  const prepareCertificate = (
     certificate: _Certificate, stakeSigningFiles: HwSigningData[],
-  ): LedgerCertificate {
+  ): LedgerCertificate => {
     switch (certificate.type) {
       case TxCertificateKeys.STAKING_KEY_REGISTRATION:
         return prepareStakingKeyRegistrationCert(certificate, stakeSigningFiles)
@@ -138,9 +134,9 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
     }
   }
 
-  function prepareWithdrawal(
+  const prepareWithdrawal = (
     withdrawal: _Withdrawal, stakeSigningFiles: HwSigningData[],
-  ): LedgerWithdrawal {
+  ): LedgerWithdrawal => {
     const pubKeyHash = withdrawal.address.slice(1)
     const path = findSigningPath(pubKeyHash, stakeSigningFiles)
     return {
