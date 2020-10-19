@@ -23,7 +23,9 @@ const makeParser = () => {
     return parser
   }
 
-  return initParser(new ArgumentParser({ description: 'Lorem Ipsum (TODO)' }), parserConfig)
+  return initParser(new ArgumentParser(
+    { description: 'Command line tool for ledger/trezor transaction signing' },
+  ), parserConfig)
 }
 
 // First 2 args are node version and script name

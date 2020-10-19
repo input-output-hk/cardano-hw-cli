@@ -32,6 +32,9 @@ const txSigningArgs = {
 }
 
 export const parserConfig = {
+  device: {
+    version: {},
+  },
   shelley: {
     address: {
       'key-gen': {

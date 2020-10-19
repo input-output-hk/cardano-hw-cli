@@ -6,14 +6,12 @@ import NamedError from './namedError'
 import { CommandType, ParsedArguments } from './types'
 
 const executeCommand = async (parsedArgs: ParsedArguments) => {
-  if (
-    parsedArgs.command === CommandType.KEY_GEN
-    || parsedArgs.command === CommandType.VERIFICATION_KEY
-    || parsedArgs.command === CommandType.SIGN_TRANSACTION
-    || parsedArgs.command === CommandType.WITNESS_TRANSACTION
-  ) {
+  if (Object.values(CommandType).includes(parsedArgs.command)) {
     const commandExecutor = await CommandExecutor()
     switch (parsedArgs.command) {
+      case (CommandType.DEVICE_VERSION):
+        await commandExecutor.printVersion()
+        break
       case (CommandType.KEY_GEN):
         await commandExecutor.createSigningKeyFile(parsedArgs)
         break

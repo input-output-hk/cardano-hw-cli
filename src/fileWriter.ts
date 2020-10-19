@@ -52,7 +52,7 @@ const HwSigningKeyOutput = (xPubKey: XPubKeyHex, path: BIP32Path): HwSigningOutp
   const type = path[3] === 0 ? 'Payment' : 'Stake'
   return {
     type: `${type}HWSigningFileShelley_ed25519`, // TODO
-    description: '',
+    description: `${type} Hardware Signing File`,
     path: PathOutput(path),
     cborXPubKeyHex: cbor.encode(Buffer.from(xPubKey, 'hex')).toString('hex'),
   }

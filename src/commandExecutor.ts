@@ -48,6 +48,9 @@ const getCryptoProvider = async (): Promise<CryptoProvider> => {
 const CommandExecutor = async () => {
   const cryptoProvider: CryptoProvider = await getCryptoProvider()
 
+  // eslint-disable-next-line no-console
+  const printVersion = async () => console.log(await cryptoProvider.getVersion())
+
   const createSigningKeyFile = async (
     { path, hwSigningFile, verificationKeyFile }: ParsedKeyGenArguments,
   ) => {
@@ -84,6 +87,7 @@ const CommandExecutor = async () => {
   }
 
   return {
+    printVersion,
     createSigningKeyFile,
     createVerificationKeyFile,
     createSignedTx,

@@ -8,6 +8,7 @@ import {
 import { HwSigningData, BIP32Path, Network } from '../types'
 
 export type CryptoProvider = {
+  getVersion: () => Promise<string>
   signTx: (
     txAux: _TxAux,
     signingFiles: HwSigningData[],
@@ -20,7 +21,7 @@ export type CryptoProvider = {
     network: Network,
     changeOutputFiles: HwSigningData[],
   ) => Promise<_ShelleyWitness | _ByronWitness>
-  getXPubKey: (path: BIP32Path) => Promise<XPubKeyHex>,
+  getXPubKey: (path: BIP32Path) => Promise<XPubKeyHex>
 }
 
 export type _AddressParameters = {

@@ -49,6 +49,11 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
   const transport = await TransportNodeHid.create()
   const ledger = new Ledger(transport)
 
+  const getVersion = async (): Promise<string> => {
+    const { major, minor, patch } = await ledger.getVersion()
+    return `Ledger app version ${major}.${minor}.${patch}`
+  }
+
   const prepareInput = (input: _Input, path?: BIP32Path): LedgerInput => ({
     path,
     txHashHex: input.txHash.toString('hex'),
@@ -246,6 +251,7 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
   }
 
   return {
+    getVersion,
     signTx,
     witnessTx,
     getXPubKey,

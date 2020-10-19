@@ -1,6 +1,7 @@
 import { SignedTxOutput, WitnessOutput } from './transaction/types'
 
 export enum CommandType {
+  DEVICE_VERSION = 'device.version',
   KEY_GEN = 'shelley.address.key-gen',
   VERIFICATION_KEY = 'shelley.key.verification-key',
   SIGN_TRANSACTION = 'shelley.transaction.sign',
@@ -29,6 +30,10 @@ export type HwSigningData = {
 
 export type TxBodyData = {
   cborHex: CborHex
+}
+
+export type ParsedDeviceVersionArguments = {
+  command: CommandType.DEVICE_VERSION,
 }
 
 export type ParsedKeyGenArguments = {
@@ -73,6 +78,7 @@ export type ParsedTransactionWitnessArguments = {
 }
 
 export type ParsedArguments =
+  | ParsedDeviceVersionArguments
   | ParsedKeyGenArguments
   | ParsedVerificationKeyArguments
   | ParsedTransactionSignArguments
