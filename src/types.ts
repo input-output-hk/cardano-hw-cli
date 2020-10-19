@@ -2,6 +2,7 @@ import { SignedTxOutput, WitnessOutput } from './transaction/types'
 
 export enum CommandType {
   DEVICE_VERSION = 'device.version',
+  SHOW_ADDRESS = 'shelley.address.show',
   KEY_GEN = 'shelley.address.key-gen',
   VERIFICATION_KEY = 'shelley.key.verification-key',
   SIGN_TRANSACTION = 'shelley.transaction.sign',
@@ -32,8 +33,17 @@ export type TxBodyData = {
   cborHex: CborHex
 }
 
+export type Address = string
+
 export type ParsedDeviceVersionArguments = {
   command: CommandType.DEVICE_VERSION,
+}
+
+export type ParsedShowAddressArguments = {
+  command: CommandType.SHOW_ADDRESS,
+  paymentPath: BIP32Path,
+  stakingPath: BIP32Path,
+  address: Address,
 }
 
 export type ParsedKeyGenArguments = {
@@ -79,6 +89,7 @@ export type ParsedTransactionWitnessArguments = {
 
 export type ParsedArguments =
   | ParsedDeviceVersionArguments
+  | ParsedShowAddressArguments
   | ParsedKeyGenArguments
   | ParsedVerificationKeyArguments
   | ParsedTransactionSignArguments

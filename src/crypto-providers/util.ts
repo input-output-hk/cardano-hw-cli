@@ -1,8 +1,9 @@
-import { HARDENED_THRESHOLD } from '../constants'
+import { HARDENED_THRESHOLD, NETWORKS } from '../constants'
 import NamedError from '../namedError'
 import { XPubKey } from '../transaction/transaction'
 import { TxCertificateKeys, _TxAux } from '../transaction/types'
 import {
+  Address,
   BIP32Path,
   HwSigningData,
   Network,
@@ -20,6 +21,10 @@ const {
   packBaseAddress,
   getShelleyAddressNetworkId,
   packEnterpriseAddress,
+  isValidBootstrapAddress,
+  isValidShelleyAddress,
+  addressToBuffer,
+  getBootstrapAddressProtocolMagic,
 } = require('cardano-crypto.js')
 
 const isShelleyPath = (path: number[]) => path[0] - HARDENED_THRESHOLD === 1852
@@ -187,6 +192,27 @@ const getChangeAddress = (
   }
 }
 
+const getAddressAttributes = (address: Address) => {
+  const addressBuffer = addressToBuffer(address)
+  const addressType = getAddressType(addressBuffer)
+  let protocolMagic
+  let networkId
+
+  if (isValidBootstrapAddress(address)) {
+    protocolMagic = getBootstrapAddressProtocolMagic(addressBuffer)
+    networkId = NETWORKS.MAINNET.protocolMagic === protocolMagic
+      ? NETWORKS.MAINNET.networkId
+      : NETWORKS.TESTNET.protocolMagic
+  } else if (isValidShelleyAddress(address)) {
+    networkId = getShelleyAddressNetworkId(addressBuffer)
+    protocolMagic = NETWORKS.MAINNET.networkId === networkId
+      ? NETWORKS.MAINNET.protocolMagic
+      : NETWORKS.TESTNET.protocolMagic
+  } else throw NamedError('InvalidAddressError')
+
+  return { addressType, networkId, protocolMagic }
+}
+
 export {
   isShelleyPath,
   validateUnsignedTx,
@@ -195,4 +221,5 @@ export {
   findSigningPath,
   encodeAddress,
   getChangeAddress,
+  getAddressAttributes,
 }

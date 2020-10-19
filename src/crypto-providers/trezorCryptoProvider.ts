@@ -19,7 +19,12 @@ import {
 import {
   Witness,
 } from '../transaction/transaction'
-import { BIP32Path, HwSigningData, Network } from '../types'
+import {
+  Address,
+  BIP32Path,
+  HwSigningData,
+  Network,
+} from '../types'
 import {
   isDelegationCertificate,
   isStakepoolRegistrationCertificate,
@@ -30,6 +35,7 @@ import {
   encodeAddress,
   filterSigningFiles,
   findSigningPath,
+  getAddressAttributes,
   getChangeAddress,
   getSigningPath,
 } from './util'
@@ -52,6 +58,25 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
       patch_version: patch,
     } = features
     return `Trezor app version ${major}.${minor}.${patch}`
+  }
+
+  const showAddress = async (
+    paymentPath: BIP32Path, stakingPath: BIP32Path, address: Address,
+  ): Promise<void> => {
+    const { addressType, networkId, protocolMagic } = getAddressAttributes(address)
+    const addressParameters = {
+      addressType,
+      path: paymentPath,
+      stakingPath,
+    }
+    const response = await TrezorConnect.cardanoGetAddress({
+      addressParameters,
+      networkId,
+      protocolMagic,
+      showOnTrezor: true,
+    })
+
+    if (response.error || !response.success) throw NamedError('TrezorError')
   }
 
   const getXPubKey = async (path: BIP32Path): Promise<string> => {
@@ -216,6 +241,7 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
 
   return {
     getVersion,
+    showAddress,
     witnessTx,
     signTx,
     getXPubKey,

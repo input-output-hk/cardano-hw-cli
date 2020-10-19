@@ -2,6 +2,7 @@ import { HARDENED_THRESHOLD, NETWORKS } from '../constants'
 import { isBIP32Path, isHwSigningData, isTxBodyData } from '../guards'
 import NamedError from '../namedError'
 import {
+  Address,
   BIP32Path,
   HwSigningData, HwSigningType, TxBodyData,
 } from '../types'
@@ -60,4 +61,9 @@ export const parseTxBodyFile = (path: string): TxBodyData => {
     return parsedData
   }
   throw NamedError('InvalidTxBodyFileError', { message: path })
+}
+
+export const parseAddressFile = (path: string): Address => {
+  const data = fs.readFileSync(path, 'utf8')
+  return data.trim()
 }

@@ -12,6 +12,9 @@ const executeCommand = async (parsedArgs: ParsedArguments) => {
       case (CommandType.DEVICE_VERSION):
         await commandExecutor.printVersion()
         break
+      case (CommandType.SHOW_ADDRESS):
+        await commandExecutor.showAddress(parsedArgs)
+        break
       case (CommandType.KEY_GEN):
         await commandExecutor.createSigningKeyFile(parsedArgs)
         break

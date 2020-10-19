@@ -19,7 +19,12 @@ import {
   TxCertificateKeys,
   _Withdrawal,
 } from '../transaction/types'
-import { BIP32Path, HwSigningData, Network } from '../types'
+import {
+  Address,
+  BIP32Path,
+  HwSigningData,
+  Network,
+} from '../types'
 import {
   isDelegationCertificate,
   isStakepoolRegistrationCertificate,
@@ -40,6 +45,7 @@ import {
   getChangeAddress,
   getSigningPath,
   isShelleyPath,
+  getAddressAttributes,
 } from './util'
 
 const TransportNodeHid = require('@ledgerhq/hw-transport-node-hid').default
@@ -52,6 +58,17 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
   const getVersion = async (): Promise<string> => {
     const { major, minor, patch } = await ledger.getVersion()
     return `Ledger app version ${major}.${minor}.${patch}`
+  }
+
+  const showAddress = async (
+    paymentPath: BIP32Path, stakingPath: BIP32Path, address: Address,
+  ): Promise<void> => {
+    try {
+      const { addressType, networkId } = getAddressAttributes(address)
+      await ledger.showAddress(addressType, networkId, paymentPath, stakingPath)
+    } catch (err) {
+      throw NamedError('LedgerOperationError', { message: `${err.name}: ${err.message}` })
+    }
   }
 
   const prepareInput = (input: _Input, path?: BIP32Path): LedgerInput => ({
@@ -252,6 +269,7 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
 
   return {
     getVersion,
+    showAddress,
     signTx,
     witnessTx,
     getXPubKey,

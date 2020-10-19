@@ -8,6 +8,7 @@ import {
 } from './fileWriter'
 import { TxAux } from './transaction/transaction'
 import {
+  ParsedShowAddressArguments,
   ParsedKeyGenArguments,
   ParsedTransactionSignArguments,
   ParsedTransactionWitnessArguments,
@@ -51,6 +52,14 @@ const CommandExecutor = async () => {
   // eslint-disable-next-line no-console
   const printVersion = async () => console.log(await cryptoProvider.getVersion())
 
+  const showAddress = async (
+    { paymentPath, stakingPath, address }: ParsedShowAddressArguments,
+  ) => {
+    // eslint-disable-next-line no-console
+    console.log(`address: ${address}`)
+    return cryptoProvider.showAddress(paymentPath, stakingPath, address)
+  }
+
   const createSigningKeyFile = async (
     { path, hwSigningFile, verificationKeyFile }: ParsedKeyGenArguments,
   ) => {
@@ -88,6 +97,7 @@ const CommandExecutor = async () => {
 
   return {
     printVersion,
+    showAddress,
     createSigningKeyFile,
     createVerificationKeyFile,
     createSignedTx,

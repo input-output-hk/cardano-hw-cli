@@ -1,4 +1,5 @@
 import {
+  parseAddressFile,
   parseHwSigningFile,
   parseNetwork,
   parsePath,
@@ -41,6 +42,15 @@ export const parserConfig = {
         '--path': { required: true, type: (path: string) => parsePath(path) },
         '--hw-signing-file': { required: true, dest: 'hwSigningFile' },
         '--verification-key-file': { required: true, dest: 'verificationKeyFile' },
+      },
+      show: {
+        '--payment-path': { required: true, type: (path: string) => parsePath(path), dest: 'paymentPath' },
+        '--staking-path': { required: true, type: (path: string) => parsePath(path), dest: 'stakingPath' },
+        '--address-file': {
+          required: true,
+          type: (path: string) => parseAddressFile(path),
+          dest: 'address',
+        },
       },
     },
     key: {

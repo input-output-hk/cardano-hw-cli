@@ -21,6 +21,7 @@ const errors: {[key: string]: ({ message } : { message?: string }) => string} = 
   MissingStakingSigningFileError: () => 'MissingStakingSigningFileError',
   MissingInputError: () => 'MissingInputError',
   MissingOutputError: () => 'MissingOutputError',
+  TrezorError: () => 'TrezorError: Trezor operation failed, please make sure you are using the latest version of Trezor firmware',
 }
 
 const getErrorTranslation = (

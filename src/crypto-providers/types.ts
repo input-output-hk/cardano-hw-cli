@@ -5,10 +5,16 @@ import {
   _ByronWitness,
   XPubKeyHex,
 } from '../transaction/types'
-import { HwSigningData, BIP32Path, Network } from '../types'
+import {
+  HwSigningData,
+  BIP32Path,
+  Network,
+  Address,
+} from '../types'
 
 export type CryptoProvider = {
   getVersion: () => Promise<string>
+  showAddress: (paymentPath: BIP32Path, stakingPath: BIP32Path, address: Address) => Promise<void>
   signTx: (
     txAux: _TxAux,
     signingFiles: HwSigningData[],
