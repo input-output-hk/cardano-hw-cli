@@ -1,3 +1,4 @@
+import { DERIVATION_SCHEME } from '../constants'
 import NamedError from '../namedError'
 import {
   TxByronWitness,
@@ -50,6 +51,7 @@ import {
 
 const TransportNodeHid = require('@ledgerhq/hw-transport-node-hid').default
 const Ledger = require('@cardano-foundation/ledgerjs-hw-app-cardano').default
+const deriveChildXpub = require('cardano-crypto.js').derivePublic
 
 export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
   const transport = await TransportNodeHid.create()
@@ -263,7 +265,19 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
   }
 
   const getXPubKey = async (path: BIP32Path): Promise<XPubKeyHex> => {
-    const { publicKeyHex, chainCodeHex } = await ledger.getExtendedPublicKey(path)
+    const parentPath = path.slice(0, 3)
+    const childPath = path.slice(3)
+    const parentXPubKey = await ledger.getExtendedPublicKey(parentPath)
+
+    const derivedXPubKey = childPath.reduce((xPubKey, index) => deriveChildXpub(
+      xPubKey,
+      index,
+      DERIVATION_SCHEME.ed25519Mode,
+    ), Buffer.from(parentXPubKey.publicKeyHex + parentXPubKey.chainCodeHex, 'hex')).toString('hex')
+
+    const publicKeyHex = derivedXPubKey.slice(0, 32)
+    const chainCodeHex = derivedXPubKey.slice(32)
+
     return publicKeyHex + chainCodeHex
   }
 
