@@ -8,13 +8,22 @@ import {
   TxCertificateKeys,
   _Certificate,
   _Withdrawal,
+  _StakepoolRegistrationCert,
+  _DelegationCert,
+  _StakingKeyRegistrationCert,
+  _StakingKeyDeregistrationCert,
+  _PoolRelay,
 } from '../transaction/types'
 import { CryptoProvider, _AddressParameters } from './types'
 import {
   TrezorInput,
   TrezorOutput,
   TrezorWithdrawal,
-  TrezorCertificate,
+  TrezorTxCertificate,
+  TrezorPoolOwner,
+  TrezorPoolRelay,
+  TrezorPoolParameters,
+  TrezorPoolMetadata,
 } from './trezorTypes'
 import {
   Witness,
@@ -25,12 +34,6 @@ import {
   HwSigningData,
   Network,
 } from '../types'
-import {
-  isDelegationCertificate,
-  isStakepoolRegistrationCertificate,
-  isStakingKeyDeregistrationCertificate,
-  isStakingKeyRegistrationCertificate,
-} from './guards'
 import {
   encodeAddress,
   filterSigningFiles,
@@ -122,11 +125,9 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
   }
 
   const prepareStakingKeyRegistrationCert = (
-    cert: _Certificate, stakeSigningFiles: HwSigningData[],
-  ): TrezorCertificate => {
-    if (
-      !isStakingKeyRegistrationCertificate(cert) && !isStakingKeyDeregistrationCertificate(cert)
-    ) throw Error()
+    cert: _StakingKeyRegistrationCert | _StakingKeyDeregistrationCert,
+    stakeSigningFiles: HwSigningData[],
+  ): TrezorTxCertificate => {
     const path = findSigningPath(cert.pubKeyHash, stakeSigningFiles)
     return {
       type: cert.type,
@@ -135,9 +136,8 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
   }
 
   const prepareDelegationCert = (
-    cert: _Certificate, stakeSigningFiles: HwSigningData[],
-  ): TrezorCertificate => {
-    if (!isDelegationCertificate(cert)) throw Error()
+    cert: _DelegationCert, stakeSigningFiles: HwSigningData[],
+  ): TrezorTxCertificate => {
     const path = findSigningPath(cert.pubKeyHash, stakeSigningFiles)
     return {
       type: cert.type,
@@ -146,21 +146,60 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
     }
   }
 
+  const preparePoolOwners = (
+    owners: Buffer[], stakeSigningFiles: HwSigningData[],
+  ): TrezorPoolOwner[] => {
+    const poolOwners = owners.map((owner) => {
+      const path = findSigningPath(owner, stakeSigningFiles)
+      return path
+        ? { staking_key_path: path }
+        : { staking_key_hash: owner.toString('hex') }
+    })
+    const ownersWithPath = poolOwners.filter((owner) => owner.staking_key_path)
+    if (ownersWithPath.length > 1) throw Error('OwnerMultipleTimesInTx')
+    return poolOwners
+  }
+
+  const prepareRelays = (
+    relays: _PoolRelay[],
+  ): TrezorPoolRelay[] => relays.map((relay) => ({
+    type: relay.type,
+    port: relay.portNumber,
+    ipv4Address: relay.ipv4?.toString('hex'),
+    ipv6Address: relay.ipv6?.toString('hex'),
+    hostName: relay.dnsName,
+  }))
+
   const prepareStakePoolRegistrationCert = (
-    cert: _Certificate, stakeSigningFiles: HwSigningData[],
-  ): TrezorCertificate => {
-    if (!isStakepoolRegistrationCertificate(cert)) throw Error()
-    const path = findSigningPath(cert.ownerPubKeys[0], stakeSigningFiles)
-    // TODO: we need to iterate through the owner pubkeys
-    return { // TODO: proper pool reg cert
+    cert: _StakepoolRegistrationCert, stakeSigningFiles: HwSigningData[],
+  ): TrezorTxCertificate => {
+    const owners: TrezorPoolOwner[] = preparePoolOwners(cert.poolOwnersPubKeyHashes, stakeSigningFiles)
+    const relays: TrezorPoolRelay[] = prepareRelays(cert.relays)
+    const metadata: TrezorPoolMetadata = {
+      url: cert.metadata.metadataUrl,
+      hash: cert.metadata.metadataHash.toString('hex'),
+    }
+    const poolParameters: TrezorPoolParameters = {
+      pool_id: cert.poolKeyHash.toString('hex'),
+      vrf_key_hash: cert.vrfPubKeyHash.toString('hex'),
+      pledge: `${cert.pledge}`,
+      cost: `${cert.cost}`,
+      margin_numerator: `${cert.margin.numerator}`,
+      margin_denominator: `${cert.margin.denominator}`,
+      reward_account: cert.rewardAddress.toString('hex'),
+      owners,
+      relays,
+      metadata,
+    }
+    return {
       type: cert.type,
-      path,
+      pool_parameters: poolParameters,
     }
   }
 
   const prepareCertificate = (
     certificate: _Certificate, stakeSigningFiles: HwSigningData[],
-  ): TrezorCertificate => {
+  ): TrezorTxCertificate => {
     switch (certificate.type) {
       case TxCertificateKeys.STAKING_KEY_REGISTRATION:
         return prepareStakingKeyRegistrationCert(certificate, stakeSigningFiles)
