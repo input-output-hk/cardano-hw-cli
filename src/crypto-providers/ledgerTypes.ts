@@ -68,7 +68,7 @@ export type LedgerPoolParams = {
   pledgeStr: string,
   costStr: string,
   margin: LedgerMargin,
-  rewardAccountHex: string,
+  rewardAccountKeyHash: string,
   poolOwners: Array<LedgerPoolOwnerParams>,
   relays: Array<LedgerRelayParams>,
   metadata: LedgerPoolMetadataParams

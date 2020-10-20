@@ -1,5 +1,6 @@
 import { HARDENED_THRESHOLD, NETWORKS } from '../constants'
 import NamedError from '../namedError'
+import { XPubKey } from '../transaction/transaction'
 import { TxCertificateKeys, _Certificate, _TxAux } from '../transaction/types'
 import {
   Address,
@@ -67,11 +68,12 @@ const filterSigningFiles = (
 const findSigningPath = (certPubKeyHash: Buffer, stakingSigningFiles: HwSigningData[]) => {
   const signingFile = stakingSigningFiles.find((file) => {
     const { pubKey } = XPubKey(file.cborXPubKeyHex)
+    // console.log(pubKey)
     const pubKeyHash = getPubKeyBlake2b224Hash(pubKey)
+    // console.log(pubKeyHash)
     return !Buffer.compare(pubKeyHash, certPubKeyHash)
   })
-  if (!signingFile) throw NamedError('MissingSigningFileError')
-  return signingFile.path
+  return signingFile?.path
 }
 
 const txHasPoolPoolRegistrationCert = (

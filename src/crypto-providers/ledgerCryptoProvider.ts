@@ -27,6 +27,7 @@ import {
   _MultiHostNameRelay,
   _SingleHostNameRelay,
   TxRelayTypes,
+  TxWitnessKeys,
 } from '../transaction/types'
 import {
   Address,
@@ -116,6 +117,7 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
     stakeSigningFiles: HwSigningData[],
   ): LedgerCertificate => {
     const path = findSigningPath(cert.pubKeyHash, stakeSigningFiles)
+    if (!path) throw Error('MissingSigningFileForCertficate')
     return {
       type: cert.type,
       path,
@@ -126,6 +128,7 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
     cert: _DelegationCert, stakeSigningFiles: HwSigningData[],
   ): LedgerCertificate => {
     const path = findSigningPath(cert.pubKeyHash, stakeSigningFiles)
+    if (!path) throw Error('MissingSigningFileForCertficate')
     return {
       type: cert.type,
       path,
@@ -136,11 +139,11 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
   const preparePoolOwners = (
     owners: Buffer[], stakeSigningFiles: HwSigningData[],
   ): LedgerPoolOwnerParams[] => {
-    const poolOwners = owners.map((owner) => {
+    const poolOwners = owners.map((owner): LedgerPoolOwnerParams => {
       const path = findSigningPath(owner, stakeSigningFiles)
       return path
         ? { stakingPath: path }
-        : { stakingKeyHash: owner.toString('hex') }
+        : { stakingKeyHashHex: owner.toString('hex') }
     })
     const ownersWithPath = poolOwners.filter((owner) => owner.stakingPath)
     if (ownersWithPath.length > 1) throw Error('OwnerMultipleTimesInTx')
@@ -197,7 +200,7 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
         numeratorStr: `${cert.margin.numerator}`,
         denominatorStr: `${cert.margin.denominator}`,
       },
-      rewardAccountHex: cert.rewardAddress.toString('hex'),
+      rewardAccountKeyHash: cert.rewardAddress.toString('hex'),
       poolOwners: owners,
       relays: prepareRelays(cert.relays),
       metadata: {
@@ -208,7 +211,6 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
 
     return {
       type: cert.type,
-      poolKeyHashHex: cert.poolKeyHash.toString('hex'),
       poolRegistrationParams,
     }
   }
@@ -235,6 +237,7 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
   ): LedgerWithdrawal => {
     const pubKeyHash = withdrawal.address.slice(1)
     const path = findSigningPath(pubKeyHash, stakeSigningFiles)
+    if (!path) throw Error('MissingSigningFileForCertficate')
     return {
       path,
       amountStr: `${withdrawal.coins}`,
@@ -327,9 +330,11 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
   ): Promise<_ShelleyWitness | _ByronWitness> => {
     const ledgerWitnesses = await ledgerSignTx(txAux, [signingFiles], network, changeOutputFiles)
     const { byronWitnesses, shelleyWitnesses } = await createWitnesses(ledgerWitnesses, [signingFiles])
-    const _byronWitnesses = byronWitnesses.map((byronWitness) => ({ data: byronWitness }) as _ByronWitness)
+    const _byronWitnesses = byronWitnesses.map((byronWitness) => (
+      { key: TxWitnessKeys.BYRON, data: byronWitness }
+    ) as _ByronWitness)
     const _shelleyWitnesses = shelleyWitnesses.map((shelleyWitness) => (
-      { data: shelleyWitness }
+      { key: TxWitnessKeys.SHELLEY, data: shelleyWitness }
     ) as _ShelleyWitness)
 
     if (_byronWitnesses.length + _shelleyWitnesses.length !== 1) throw NamedError('MultipleWitnessesError')
