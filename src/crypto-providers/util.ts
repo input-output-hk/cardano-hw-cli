@@ -1,7 +1,6 @@
 import { HARDENED_THRESHOLD, NETWORKS } from '../constants'
 import NamedError from '../namedError'
-import { XPubKey } from '../transaction/transaction'
-import { TxCertificateKeys, _TxAux } from '../transaction/types'
+import { TxCertificateKeys, _Certificate, _TxAux } from '../transaction/types'
 import {
   Address,
   BIP32Path,
@@ -75,42 +74,52 @@ const findSigningPath = (certPubKeyHash: Buffer, stakingSigningFiles: HwSigningD
   return signingFile.path
 }
 
-const validateTxWithStakePoolCert = (
+const txHasPoolPoolRegistrationCert = (
+  certs: _Certificate[],
+): boolean => certs.some(
+  ({ type }) => type === TxCertificateKeys.STAKEPOOL_REGISTRATION,
+)
+
+const validateTx = (
   txAux: _TxAux, paymentSigningFiles: HwSigningData[], stakeSigningFiles: HwSigningData[],
 ): void => {
+  if (!txAux.inputs.length) throw NamedError('MissingInputError')
+  if (!txAux.outputs.length) throw NamedError('MissingOutputError')
+  if (paymentSigningFiles.length > txAux.inputs.length) {
+    throw NamedError('TooManySigningFilesError')
+  }
+  const requireStakingSigningFile = !!(txAux.certificates.length + txAux.withdrawals.length)
+  if (
+    requireStakingSigningFile && !stakeSigningFiles.length
+  ) throw NamedError('MissingStakingSigningFileError')
+}
+
+const validateWitnessing = (
+  txAux: _TxAux, signingFiles: HwSigningData[],
+): void => {
+  const {
+    paymentSigningFiles,
+    stakeSigningFiles,
+  } = filterSigningFiles(signingFiles)
+  validateTx(txAux, paymentSigningFiles, stakeSigningFiles)
+  if (!txHasPoolPoolRegistrationCert(txAux.certificates)) return
+
   if (txAux.certificates.length !== 1) throw NamedError('MultipleCertificatesWithPoolRegError')
   if (txAux.withdrawals.length) throw NamedError('WithdrawalIncludedWithPoolRegError')
   if (paymentSigningFiles.length) throw NamedError('PaymentFileInlucedWithPoolRegError')
   if (stakeSigningFiles.length !== 1) throw NamedError('MultipleStakingSigningFilesWithPoolRegError')
 }
 
-const validateTxWithoutStakePoolCert = (
-  txAux: _TxAux, paymentSigningFiles: HwSigningData[], stakeSigningFiles: HwSigningData[],
+const validateSigning = (
+  txAux: _TxAux, signingFiles: HwSigningData[],
 ): void => {
-  if (!paymentSigningFiles.length) throw NamedError('MissingPaymentSigningFileError')
-  if (paymentSigningFiles.length > txAux.inputs.length) {
-    throw NamedError('TooManySigningFilesError')
-  }
-  const requireStakingSigningFile = !!(txAux.certificates.length + txAux.withdrawals.length)
-  if (requireStakingSigningFile && !stakeSigningFiles.length) throw NamedError('MissingStakingSigningFileError')
-}
-
-const validateUnsignedTx = (txAux: _TxAux, signingFiles: HwSigningData[]): void => {
-  if (!txAux.inputs.length) throw NamedError('MissingInputError')
-  if (!txAux.outputs.length) throw NamedError('MissingOutputError')
-  if (!signingFiles.length) throw NamedError('MissingSigningFileError')
   const {
     paymentSigningFiles,
     stakeSigningFiles,
   } = filterSigningFiles(signingFiles)
-  const hasStakePoolRegCert = txAux.certificates.some(
-    ({ type }) => type === TxCertificateKeys.STAKEPOOL_REGISTRATION,
-  )
-  if (hasStakePoolRegCert) {
-    validateTxWithStakePoolCert(txAux, paymentSigningFiles, stakeSigningFiles)
-  } else {
-    validateTxWithoutStakePoolCert(txAux, paymentSigningFiles, stakeSigningFiles)
-  }
+  if (txHasPoolPoolRegistrationCert(txAux.certificates)) throw NamedError('CantSignTxWithPoolReg')
+  validateTx(txAux, paymentSigningFiles, stakeSigningFiles)
+  if (!paymentSigningFiles.length) throw NamedError('MissingPaymentSigningFileError')
 }
 
 const _packBootStrapAddress = (
@@ -215,7 +224,8 @@ const getAddressAttributes = (address: Address) => {
 
 export {
   isShelleyPath,
-  validateUnsignedTx,
+  validateSigning,
+  validateWitnessing,
   getSigningPath,
   filterSigningFiles,
   findSigningPath,

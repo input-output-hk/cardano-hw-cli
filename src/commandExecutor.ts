@@ -16,7 +16,7 @@ import {
 } from './types'
 import { LedgerCryptoProvider } from './crypto-providers/ledgerCryptoProvider'
 import { TrezorCryptoProvider } from './crypto-providers/trezorCryptoProvider'
-import { validateUnsignedTx } from './crypto-providers/util'
+import { validateSigning, validateWitnessing } from './crypto-providers/util'
 import NamedError from './namedError'
 
 const promiseTimeout = <T> (promise: Promise<T>, ms: number): Promise<T> => {
@@ -79,7 +79,7 @@ const CommandExecutor = async () => {
 
   const createSignedTx = async (args: ParsedTransactionSignArguments) => {
     const txAux = TxAux(args.txBodyFileData.cborHex)
-    validateUnsignedTx(txAux, args.hwSigningFileData)
+    validateSigning(txAux, args.hwSigningFileData)
     const signedTx = await cryptoProvider.signTx(
       txAux, args.hwSigningFileData, args.network, args.changeOutputKeyFileData,
     )
@@ -88,7 +88,7 @@ const CommandExecutor = async () => {
 
   const createTxWitness = async (args: ParsedTransactionWitnessArguments) => {
     const txAux = TxAux(args.txBodyFileData.cborHex)
-    validateUnsignedTx(txAux, [args.hwSigningFileData])
+    validateWitnessing(txAux, [args.hwSigningFileData])
     const txWitness = await cryptoProvider.witnessTx(
       txAux, args.hwSigningFileData, args.network, args.changeOutputKeyFileData,
     )
