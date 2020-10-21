@@ -129,6 +129,7 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
     stakeSigningFiles: HwSigningData[],
   ): TrezorTxCertificate => {
     const path = findSigningPath(cert.pubKeyHash, stakeSigningFiles)
+    if (!path) throw Error('MissingSigningFileForCertficate')
     return {
       type: cert.type,
       path,
@@ -139,6 +140,7 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
     cert: _DelegationCert, stakeSigningFiles: HwSigningData[],
   ): TrezorTxCertificate => {
     const path = findSigningPath(cert.pubKeyHash, stakeSigningFiles)
+    if (!path) throw Error('MissingSigningFileForCertficate')
     return {
       type: cert.type,
       path,
@@ -219,6 +221,7 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
   ): TrezorWithdrawal => {
     const pubKeyHash = withdrawal.address.slice(1) // TODO: helper
     const path = findSigningPath(pubKeyHash, stakeSigningFiles)
+    if (!path) throw Error('MissingSigningFileForCertficate')
     return {
       path,
       amount: `${withdrawal.coins}`,
