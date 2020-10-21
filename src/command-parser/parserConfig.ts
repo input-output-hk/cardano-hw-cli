@@ -71,12 +71,14 @@ export const parserConfig = {
         },
       },
       show: {
-        '--payment-path': { required: true,
+        '--payment-path': {
+          required: true,
           type: (path: string) => parsePath(path),
           dest: 'paymentPath',
           help: 'Payment derivation path.',
         },
-        '--staking-path': { required: true,
+        '--staking-path': {
+          required: true,
           type: (path: string) => parsePath(path),
           dest: 'stakingPath',
           help: 'Stake derivation path.',

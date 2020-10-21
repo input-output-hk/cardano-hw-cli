@@ -22,6 +22,16 @@ const errors: {[key: string]: ({ message } : { message?: string }) => string} = 
   MissingInputError: () => 'MissingInputError',
   MissingOutputError: () => 'MissingOutputError',
   TrezorError: () => 'TrezorError: Trezor operation failed, please make sure you are using the latest version of Trezor firmware',
+  TxInputParseError: () => 'TxInputParseError: Failed to parse input',
+  TxOutputParseError: () => 'TxOutputParseError: Failed to parse output',
+  WithrawalsParseError: () => 'WithrawalsParseError: Failed to parse withdrawals',
+  TxStakingKeyRegistrationCertParseError: () => 'TxStakingKeyRegistrationCertParseError: Failed to parse staking key registration certificate',
+  TxStakingKeyDeregistrationCertParseError: () => 'TxStakingKeyDeregistrationCertParseError: Failed to parse staking key deregistration certificate',
+  TxDelegationCertParseError: () => 'TxDelegationCertParseError: Failed to parse delegation certificate',
+  TxStakepoolRegistrationCertParseError: () => 'TxStakepoolRegistrationCertParseError: Failed to parse stakepool registration certificate',
+  TxSingleHostIPRelayParseError: () => 'TxSingleHostIPRelayParseError: Failed to parse single host IP relay',
+  TxSingleHostNameRelayParseError: () => 'TxSingleHostNameRelayParseError: Failed to parse single host name relay',
+  TxMultiHostNameRelayParseError: () => 'TxMultiHostNameRelayParseError: Failed to parse multi host name relay',
 }
 
 const getErrorTranslation = (

@@ -1,3 +1,17 @@
+import { isArrayOfType } from '../guards'
+import NamedError from '../namedError'
+import {
+  isDelegationCert,
+  isStakepoolRegistrationCert,
+  isStakingKeyDeregistrationCert,
+  isTxInput,
+  isTxMultiHostNameRelay,
+  isTxOutput,
+  isTxSingleHostIPRelay,
+  isTxSingleHostNameRelay,
+  isTxStakingKeyRegistrationCert,
+  isWithdrawalsMap,
+} from './guards'
 import {
   _Input,
   _Output,
@@ -16,40 +30,61 @@ import {
   _SingleHostIPRelay,
   _SingleHostNameRelay,
   _MultiHostNameRelay,
+  TxInput,
+  TxOutput,
 } from './types'
 
 const parseTxInputs = (
   txInputs: any[],
-): _Input[] => txInputs.map(([txHash, outputIndex]): _Input => ({ txHash, outputIndex }))
+): _Input[] => {
+  if (isArrayOfType<TxInput>(txInputs, isTxInput)) {
+    return txInputs.map(([txHash, outputIndex]): _Input => ({ txHash, outputIndex }))
+  }
+  throw NamedError('TxInputParseError')
+}
 
 const parseTxOutputs = (
   txOutputs: any[],
-): _Output[] => txOutputs.map(([address, coins]): _Output => ({ address, coins }))
+): _Output[] => {
+  if (isArrayOfType<TxOutput>(txOutputs, isTxOutput)) {
+    return txOutputs.map(([address, coins]): _Output => ({ address, coins }))
+  }
+  throw NamedError('TxOutputParseError')
+}
 
 const parseRelay = (poolRelay: any): _PoolRelay => {
   const parseSingleHostIPRelay = (relay : any): _SingleHostIPRelay => {
-    const [type, portNumber, ipv4, ipv6] = relay
-    return {
-      type,
-      portNumber,
-      ipv4,
-      ipv6,
+    if (isTxSingleHostIPRelay(relay)) {
+      const [type, portNumber, ipv4, ipv6] = relay
+      return {
+        type,
+        portNumber,
+        ipv4,
+        ipv6,
+      }
     }
+    throw NamedError('TxSingleHostIPRelayParseError')
   }
   const parseSingleHostNameRelay = (relay : any): _SingleHostNameRelay => {
-    const [type, portNumber, dnsName] = relay
-    return {
-      type,
-      portNumber,
-      dnsName,
+    if (isTxSingleHostNameRelay(relay)) {
+      const [type, portNumber, dnsName] = relay
+      return {
+        type,
+        portNumber,
+        dnsName,
+      }
     }
+    throw NamedError('TxSingleHostNameRelayParseError')
   }
   const parseMultiHostNameRelay = (relay : any): _MultiHostNameRelay => {
-    const [type, dnsName] = relay
-    return {
-      type,
-      dnsName,
+    if (isTxMultiHostNameRelay(relay)) {
+      const [type, dnsName] = relay
+      return {
+        type,
+        dnsName,
+      }
     }
+    throw NamedError('TxMultiHostNameRelayParseError')
   }
   switch (poolRelay[0]) {
     case TxRelayTypes.SINGLE_HOST_IP:
@@ -64,42 +99,66 @@ const parseRelay = (poolRelay: any): _PoolRelay => {
 
 const parseTxCerts = (txCertificates: any[]): _Certificate[] => {
   const stakeKeyRegistrationCertParser = (
-    [type, [, pubKeyHash]]: any,
-  ): _StakingKeyRegistrationCert => ({ type, pubKeyHash })
+    txCertificate: any,
+  ): _StakingKeyRegistrationCert => {
+    if (isTxStakingKeyRegistrationCert(txCertificate)) {
+      const [type, [, pubKeyHash]] = txCertificate
+      return ({ type, pubKeyHash })
+    }
+    throw NamedError('TxStakingKeyRegistrationCertParseError')
+  }
 
   const stakeKeyDeregistrationCertParser = (
-    [type, [, pubKeyHash]]: any,
-  ): _StakingKeyDeregistrationCert => ({ type, pubKeyHash })
+    txCertificate: any,
+  ): _StakingKeyDeregistrationCert => {
+    if (isStakingKeyDeregistrationCert(txCertificate)) {
+      const [type, [, pubKeyHash]] = txCertificate
+      return ({ type, pubKeyHash })
+    }
+    throw NamedError('TxStakingKeyDeregistrationCertParseError')
+  }
 
   const delegationCertParser = (
-    [type, [, pubKeyHash], poolHash]: any,
-  ): _DelegationCert => ({ type, pubKeyHash, poolHash })
+    txCertificate: any,
+  ): _DelegationCert => {
+    if (isDelegationCert(txCertificate)) {
+      const [type, [, pubKeyHash], poolHash] = txCertificate
+      return ({ type, pubKeyHash, poolHash })
+    }
+    throw NamedError('TxDelegationCertParseError')
+  }
 
   const stakepoolRegistrationCertParser = (
-    [
-      type,
-      poolKeyHash,
-      vrfPubKeyHash,
-      pledge,
-      cost,
-      { value },
-      rewardAddress,
-      poolOwnersPubKeyHashes,
-      relays,
-      [metadataUrl, metadataHash],
-    ]: any,
-  ): _StakepoolRegistrationCert => ({
-    type,
-    poolKeyHash,
-    vrfPubKeyHash,
-    pledge,
-    cost,
-    margin: { numerator: value[0], denominator: value[1] }, // tagged
-    rewardAddress,
-    poolOwnersPubKeyHashes,
-    relays: relays.map(parseRelay),
-    metadata: { metadataUrl, metadataHash },
-  })
+    txCertificate: any,
+  ): _StakepoolRegistrationCert => {
+    if (isStakepoolRegistrationCert(txCertificate)) {
+      const [
+        type,
+        poolKeyHash,
+        vrfPubKeyHash,
+        pledge,
+        cost,
+        { value },
+        rewardAddress,
+        poolOwnersPubKeyHashes,
+        relays,
+        [metadataUrl, metadataHash],
+      ] = txCertificate
+      return ({
+        type,
+        poolKeyHash,
+        vrfPubKeyHash,
+        pledge,
+        cost,
+        margin: { numerator: value[0], denominator: value[1] }, // tagged
+        rewardAddress,
+        poolOwnersPubKeyHashes,
+        relays: relays.map(parseRelay),
+        metadata: { metadataUrl, metadataHash },
+      })
+    }
+    throw NamedError('TxStakepoolRegistrationCertParseError')
+  }
 
   const parseTxCert = (cert: any) => {
     switch (cert[0]) {
@@ -122,7 +181,12 @@ const parseTxCerts = (txCertificates: any[]): _Certificate[] => {
 
 const parseTxWithdrawals = (
   withdrawals: Map<Buffer, number>,
-): _Withdrawal[] => Array.from(withdrawals).map(([address, coins]): _Withdrawal => ({ address, coins }))
+): _Withdrawal[] => {
+  if (isWithdrawalsMap(withdrawals)) {
+    return Array.from(withdrawals).map(([address, coins]): _Withdrawal => ({ address, coins }))
+  }
+  throw NamedError('WithrawalsParseError')
+}
 
 const parseUnsignedTx = ([txBody, meta]: _UnsignedTxDecoded): _UnsignedTxParsed => {
   const inputs = parseTxInputs(txBody.get(TxBodyKeys.INPUTS))

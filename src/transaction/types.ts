@@ -46,7 +46,7 @@ export type _StakingKeyDeregistrationCert = {
 }
 
 export const enum TxRelayTypes {
-  SINGLE_HOST_IP= 0,
+  SINGLE_HOST_IP = 0,
   SINGLE_HOST_NAME = 1,
   MULTI_HOST_NAME = 2,
 }
@@ -193,3 +193,65 @@ export type SignedTxOutput = {
   description: '',
   cborHex: SignedTxCborHex,
 }
+
+export type TxInput = [
+  Buffer,
+  number
+]
+
+export type TxOutput = [
+  Buffer,
+  number
+]
+
+export type TxStakingKeyRegistrationCert = [
+  TxCertificateKeys.STAKING_KEY_REGISTRATION,
+  [number, Buffer],
+]
+
+export type TxStakingKeyDeregistrationCert = [
+  TxCertificateKeys.STAKING_KEY_DEREGISTRATION,
+  [number, Buffer],
+]
+
+export type TxDelegationCert = [
+  TxCertificateKeys.DELEGATION,
+  [number, Buffer],
+  Buffer,
+]
+
+export type TxSingleHostIPRelay = [
+  TxRelayTypes.SINGLE_HOST_IP,
+  number?,
+  Buffer?,
+  Buffer?,
+]
+
+export type TxSingleHostNameRelay = [
+  TxRelayTypes.SINGLE_HOST_NAME,
+  number,
+  string,
+]
+
+export type TxMultiHostNameRelay = [
+  TxRelayTypes.MULTI_HOST_NAME,
+  string,
+]
+
+export type TxStakepoolRegistrationCert = [
+  TxCertificateKeys.STAKEPOOL_REGISTRATION,
+  Buffer,
+  Buffer,
+  number,
+  number,
+  {
+    value: {
+      0: number,
+      1: number,
+    },
+  },
+  Buffer,
+  Array<Buffer>,
+  any,
+  [string, Buffer],
+]
