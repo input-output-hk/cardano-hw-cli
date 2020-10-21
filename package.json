@@ -11,7 +11,7 @@
     "dev": "yarn build-js && node dist/index.js",
     "eslint": "eslint src/ test/ --max-warnings=0 --ext .ts,.js",
     "build": "yarn clean && yarn install && yarn build-js && nexe dist/index.js -o ./build/cardano-hw-cli && cp package.json ./build/package.json",
-    "build-linux": "./scripts/build-linux.sh",
+    "build-linux": "./scripts/build-linux-deb-package.sh",
     "test-unit": "mocha -r ts-node/register 'test/unit/**/*.js'",
     "test-bin": "yarn build && ./build/cardano-hw-cli --help",
     "test-integration-ledger": "mocha -r ts-node/register 'test/integration/ledger/node/**/*.js'",
