@@ -8,13 +8,23 @@ import {
   TxCertificateKeys,
   _Certificate,
   _Withdrawal,
+  _StakepoolRegistrationCert,
+  _DelegationCert,
+  _StakingKeyRegistrationCert,
+  _StakingKeyDeregistrationCert,
+  _PoolRelay,
 } from '../transaction/types'
 import { CryptoProvider, _AddressParameters } from './types'
 import {
   TrezorInput,
   TrezorOutput,
   TrezorWithdrawal,
-  TrezorCertificate,
+  TrezorTxCertificate,
+  TrezorPoolOwner,
+  TrezorPoolRelay,
+  TrezorPoolParameters,
+  TrezorPoolMetadata,
+  TrezorPoolMargin,
 } from './trezorTypes'
 import {
   Witness,
@@ -26,22 +36,18 @@ import {
   Network,
 } from '../types'
 import {
-  isDelegationCertificate,
-  isStakepoolRegistrationCertificate,
-  isStakingKeyDeregistrationCertificate,
-  isStakingKeyRegistrationCertificate,
-} from './guards'
-import {
   encodeAddress,
   filterSigningFiles,
   findSigningPath,
   getAddressAttributes,
   getChangeAddress,
   getSigningPath,
+  ipv4ToString,
+  ipv6ToString,
 } from './util'
 import NamedError from '../namedError'
 
-const TrezorConnect = require('trezor-connect').default
+const TrezorConnect = require('../../trezor-extended').default
 
 const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
   TrezorConnect.manifest({
@@ -122,12 +128,11 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
   }
 
   const prepareStakingKeyRegistrationCert = (
-    cert: _Certificate, stakeSigningFiles: HwSigningData[],
-  ): TrezorCertificate => {
-    if (
-      !isStakingKeyRegistrationCertificate(cert) && !isStakingKeyDeregistrationCertificate(cert)
-    ) throw Error()
+    cert: _StakingKeyRegistrationCert | _StakingKeyDeregistrationCert,
+    stakeSigningFiles: HwSigningData[],
+  ): TrezorTxCertificate => {
     const path = findSigningPath(cert.pubKeyHash, stakeSigningFiles)
+    if (!path) throw Error('Missing signing file for certificate')
     return {
       type: cert.type,
       path,
@@ -135,10 +140,10 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
   }
 
   const prepareDelegationCert = (
-    cert: _Certificate, stakeSigningFiles: HwSigningData[],
-  ): TrezorCertificate => {
-    if (!isDelegationCertificate(cert)) throw Error()
+    cert: _DelegationCert, stakeSigningFiles: HwSigningData[],
+  ): TrezorTxCertificate => {
     const path = findSigningPath(cert.pubKeyHash, stakeSigningFiles)
+    if (!path) throw Error('Missing signing file for certificate')
     return {
       type: cert.type,
       path,
@@ -146,21 +151,64 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
     }
   }
 
+  const preparePoolOwners = (
+    owners: Buffer[], stakeSigningFiles: HwSigningData[],
+  ): TrezorPoolOwner[] => {
+    const poolOwners = owners.map((owner): TrezorPoolOwner => {
+      const path = findSigningPath(owner, stakeSigningFiles)
+      return path
+        ? { stakingKeyPath: path }
+        : { stakingKeyHash: owner.toString('hex') }
+    })
+    const ownersWithPath = poolOwners.filter((owner) => owner.stakingKeyPath)
+    if (!ownersWithPath.length) throw Error('Missing signing file for certificate')
+    if (ownersWithPath.length > 1) throw Error('OwnerMultipleTimesInTx')
+    return poolOwners
+  }
+
+  const prepareRelays = (
+    relays: _PoolRelay[],
+  ): TrezorPoolRelay[] => relays.map((relay) => ({
+    type: relay.type,
+    port: relay.portNumber,
+    ipv4Address: ipv4ToString(relay.ipv4),
+    ipv6Address: ipv6ToString(relay.ipv6),
+    hostName: relay.dnsName,
+  }))
+
   const prepareStakePoolRegistrationCert = (
-    cert: _Certificate, stakeSigningFiles: HwSigningData[],
-  ): TrezorCertificate => {
-    if (!isStakepoolRegistrationCertificate(cert)) throw Error()
-    const path = findSigningPath(cert.ownerPubKeys[0], stakeSigningFiles)
-    // TODO: we need to iterate through the owner pubkeys
-    return { // TODO: proper pool reg cert
+    cert: _StakepoolRegistrationCert, stakeSigningFiles: HwSigningData[],
+  ): TrezorTxCertificate => {
+    const owners: TrezorPoolOwner[] = preparePoolOwners(cert.poolOwnersPubKeyHashes, stakeSigningFiles)
+    const relays: TrezorPoolRelay[] = prepareRelays(cert.relays)
+    const metadata: TrezorPoolMetadata = {
+      url: cert.metadata.metadataUrl,
+      hash: cert.metadata.metadataHash.toString('hex'),
+    }
+    const margin:TrezorPoolMargin = {
+      numerator: `${cert.margin.numerator}`,
+      denominator: `${cert.margin.denominator}`,
+    }
+    const poolParameters: TrezorPoolParameters = {
+      poolId: cert.poolKeyHash.toString('hex'),
+      vrfKeyHash: cert.vrfPubKeyHash.toString('hex'),
+      pledge: `${cert.pledge}`,
+      cost: `${cert.cost}`,
+      margin,
+      rewardAccount: encodeAddress(cert.rewardAddress),
+      owners,
+      relays,
+      metadata,
+    }
+    return {
       type: cert.type,
-      path,
+      poolParameters,
     }
   }
 
   const prepareCertificate = (
     certificate: _Certificate, stakeSigningFiles: HwSigningData[],
-  ): TrezorCertificate => {
+  ): TrezorTxCertificate => {
     switch (certificate.type) {
       case TxCertificateKeys.STAKING_KEY_REGISTRATION:
         return prepareStakingKeyRegistrationCert(certificate, stakeSigningFiles)
@@ -180,6 +228,7 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
   ): TrezorWithdrawal => {
     const pubKeyHash = withdrawal.address.slice(1) // TODO: helper
     const path = findSigningPath(pubKeyHash, stakeSigningFiles)
+    if (!path) throw Error('Missing signing file for withdrawal')
     return {
       path,
       amount: `${withdrawal.coins}`,
@@ -205,8 +254,8 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
     const certificates = txAux.certificates.map(
       (certificate) => prepareCertificate(certificate, stakeSigningFiles),
     )
-    const { fee } = txAux
-    const { ttl } = txAux
+    const fee = `${txAux.fee}`
+    const ttl = `${txAux.ttl}`
     const withdrawals = txAux.withdrawals.map(
       (withdrawal) => prepareWithdrawal(withdrawal, stakeSigningFiles),
     )
@@ -221,9 +270,11 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
       certificates,
       withdrawals,
     })
-
     if (response.error || !response.success) {
       throw Error('TrezorSignTxError')
+    }
+    if (response.payload.hash !== txAux.getId()) {
+      throw Error('TxSerializationMismatchError')
     }
 
     return response.payload.serializedTx as SignedTxCborHex

@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { BIP32Path } from '../types'
 
 export type TrezorCertificatePointer = {
@@ -8,9 +9,7 @@ export type TrezorCertificatePointer = {
 
 export type TrezorInput = {
   path?: string | BIP32Path
-  // eslint-disable-next-line camelcase
   prev_hash: string
-  // eslint-disable-next-line camelcase
   prev_index: number
 }
 
@@ -47,7 +46,7 @@ export type TrezorPoolRelay = {
   ipv4Address?: string;
   ipv6Address?: string;
   port?: number;
-  hostName: string;
+  hostName?: string;
 }
 
 export type TrezorPoolMetadata = {
@@ -55,21 +54,25 @@ export type TrezorPoolMetadata = {
   hash: string;
 }
 
+export type TrezorPoolMargin = {
+  numerator: string;
+  denominator: string;
+}
+
 export type TrezorPoolParameters = {
+  poolId: string;
   vrfKeyHash: string;
   pledge: string;
   cost: string;
-  marginNumerator: string;
-  marginDenominator: string;
-  rewardAccountKeyHash: string;
+  margin: TrezorPoolMargin;
+  rewardAccount: string;
   owners: TrezorPoolOwner[];
   relays: TrezorPoolRelay[];
   metadata: TrezorPoolMetadata;
 }
-
-export type TrezorCertificate = {
+export type TrezorTxCertificate = {
   type: number
-  path?: string | number[]
+  path?: Array<number>
   pool?: string
   poolParameters?: TrezorPoolParameters
 }
