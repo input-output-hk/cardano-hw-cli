@@ -17,10 +17,10 @@ const errors: {[key: string]: ({ message } : { message?: string }) => string} = 
   PaymentFileInlucedWithPoolRegError: () => 'PaymentFileInlucedWithPoolRegError: Unexpected payment hardware signing file with pool registration certificate found',
   MultipleStakingSigningFilesWithPoolRegError: () => 'MultipleStakingSigningFilesWithPoolRegError: Multiple staking signing files with pool registration certificate found, expected only one staking signing file',
   MissingPaymentSigningFileError: () => 'MissingPaymentSigningFileError: Missing payment hardware signing file',
-  TooManySigningFilesError: () => 'TooManySigningFilesError:',
+  TooManySigningFilesError: () => 'TooManySigningFilesError: Too many signing files',
   MissingStakingSigningFileError: () => 'MissingStakingSigningFileError',
-  MissingInputError: () => 'MissingInputError',
-  MissingOutputError: () => 'MissingOutputError',
+  MissingInputError: () => 'MissingInputError: Missing input',
+  MissingOutputError: () => 'MissingOutputError: Missing output',
   TrezorError: () => 'TrezorError: Trezor operation failed, please make sure you are using the latest version of Trezor firmware',
   TxInputParseError: () => 'TxInputParseError: Failed to parse input',
   TxOutputParseError: () => 'TxOutputParseError: Failed to parse output',
@@ -32,6 +32,12 @@ const errors: {[key: string]: ({ message } : { message?: string }) => string} = 
   TxSingleHostIPRelayParseError: () => 'TxSingleHostIPRelayParseError: Failed to parse single host IP relay',
   TxSingleHostNameRelayParseError: () => 'TxSingleHostNameRelayParseError: Failed to parse single host name relay',
   TxMultiHostNameRelayParseError: () => 'TxMultiHostNameRelayParseError: Failed to parse multi host name relay',
+  MissingSigningFileForCertficateError: () => 'MissingSigningFileForCertficateError: Missing signing file for certficate',
+  OwnerMultipleTimesInTxError: () => 'OwnerMultipleTimesInTxError: Owner multiple times in tx',
+  UnsupportedRelayTypeError: () => 'UnsupportedRelayTypeError: Unsupported relay type',
+  UnknownCertificateError: () => 'UnknownCertificateError: Unknown certificate',
+  UnsupportedCertificateTypeError: () => 'UnsupportedCertificateTypeError: Unsupported certificate type',
+  MissingSigningFileForWithdrawalError: () => 'MissingSigningFileForWithdrawalError: Missing signing file for withdrawal',
 }
 
 const getErrorTranslation = (

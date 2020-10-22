@@ -132,7 +132,7 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
     stakeSigningFiles: HwSigningData[],
   ): TrezorTxCertificate => {
     const path = findSigningPath(cert.pubKeyHash, stakeSigningFiles)
-    if (!path) throw Error('Missing signing file for certificate')
+    if (!path) throw NamedError('MissingSigningFileForCertificateError')
     return {
       type: cert.type,
       path,
@@ -143,7 +143,7 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
     cert: _DelegationCert, stakeSigningFiles: HwSigningData[],
   ): TrezorTxCertificate => {
     const path = findSigningPath(cert.pubKeyHash, stakeSigningFiles)
-    if (!path) throw Error('Missing signing file for certificate')
+    if (!path) throw NamedError('MissingSigningFileForCertificateError')
     return {
       type: cert.type,
       path,
@@ -161,8 +161,8 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
         : { stakingKeyHash: owner.toString('hex') }
     })
     const ownersWithPath = poolOwners.filter((owner) => owner.stakingKeyPath)
-    if (!ownersWithPath.length) throw Error('Missing signing file for certificate')
-    if (ownersWithPath.length > 1) throw Error('OwnerMultipleTimesInTx')
+    if (!ownersWithPath.length) throw NamedError('MissingSigningFileForCertificateError')
+    if (ownersWithPath.length > 1) throw NamedError('OwnerMultipleTimesInTxError')
     return poolOwners
   }
 
@@ -228,7 +228,7 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
   ): TrezorWithdrawal => {
     const pubKeyHash = withdrawal.address.slice(1) // TODO: helper
     const path = findSigningPath(pubKeyHash, stakeSigningFiles)
-    if (!path) throw Error('Missing signing file for withdrawal')
+    if (!path) throw NamedError('MissingSigningFileForWithdrawalError')
     return {
       path,
       amount: `${withdrawal.coins}`,
@@ -271,10 +271,10 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
       withdrawals,
     })
     if (response.error || !response.success) {
-      throw Error('TrezorSignTxError')
+      throw NamedError('TrezorSignTxError')
     }
     if (response.payload.hash !== txAux.getId()) {
-      throw Error('TxSerializationMismatchError')
+      throw NamedError('TxSerializationMismatchError')
     }
 
     return response.payload.serializedTx as SignedTxCborHex

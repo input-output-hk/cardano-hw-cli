@@ -117,7 +117,7 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
     stakeSigningFiles: HwSigningData[],
   ): LedgerCertificate => {
     const path = findSigningPath(cert.pubKeyHash, stakeSigningFiles)
-    if (!path) throw Error('MissingSigningFileForCertficate')
+    if (!path) throw NamedError('MissingSigningFileForCertficateError')
     return {
       type: cert.type,
       path,
@@ -128,7 +128,7 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
     cert: _DelegationCert, stakeSigningFiles: HwSigningData[],
   ): LedgerCertificate => {
     const path = findSigningPath(cert.pubKeyHash, stakeSigningFiles)
-    if (!path) throw Error('MissingSigningFileForCertficate')
+    if (!path) throw NamedError('MissingSigningFileForCertficateError')
     return {
       type: cert.type,
       path,
@@ -146,7 +146,7 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
         : { stakingKeyHashHex: owner.toString('hex') }
     })
     const ownersWithPath = poolOwners.filter((owner) => owner.stakingPath)
-    if (ownersWithPath.length > 1) throw Error('OwnerMultipleTimesInTx')
+    if (ownersWithPath.length > 1) throw NamedError('OwnerMultipleTimesInTxError')
     return poolOwners
   }
 
@@ -177,7 +177,8 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
           return SingleNameRelay(relay as _SingleHostNameRelay)
         case TxRelayTypes.MULTI_HOST_NAME:
           return MultiNameRelay(relay as _MultiHostNameRelay)
-        default: throw Error('Unsupported relay type')
+        default:
+          throw NamedError('UnsupportedRelayTypeError')
       }
     }
 
@@ -228,7 +229,7 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
       case TxCertificateKeys.STAKEPOOL_REGISTRATION:
         return prepareStakePoolRegistrationCert(certificate, stakeSigningFiles)
       default:
-        throw Error('UnknownCertificateError')
+        throw NamedError('UnknownCertificateError')
     }
   }
 
@@ -237,7 +238,7 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
   ): LedgerWithdrawal => {
     const pubKeyHash = withdrawal.address.slice(1)
     const path = findSigningPath(pubKeyHash, stakeSigningFiles)
-    if (!path) throw Error('MissingSigningFileForWithdrawal')
+    if (!path) throw NamedError('MissingSigningFileForWithdrawalError')
     return {
       path,
       amountStr: `${withdrawal.coins}`,

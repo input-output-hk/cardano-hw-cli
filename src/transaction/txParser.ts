@@ -93,7 +93,8 @@ const parseRelay = (poolRelay: any): _PoolRelay => {
       return parseSingleHostNameRelay(poolRelay)
     case TxRelayTypes.MULTI_HOST_NAME:
       return parseMultiHostNameRelay(poolRelay)
-    default: throw Error('Unsupported relay type')
+    default:
+      throw NamedError('UnsupportedRelayTypeError')
   }
 }
 
@@ -170,7 +171,8 @@ const parseTxCerts = (txCertificates: any[]): _Certificate[] => {
         return delegationCertParser(cert)
       case TxCertificateKeys.STAKEPOOL_REGISTRATION:
         return stakepoolRegistrationCertParser(cert)
-      default: throw Error('Unsupported certificate type')
+      default:
+        throw NamedError('UnsupportedCertificateTypeError')
     }
   }
 
