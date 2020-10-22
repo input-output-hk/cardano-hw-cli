@@ -1,5 +1,6 @@
 import { HARDENED_THRESHOLD, NETWORKS } from '../constants'
 import NamedError from '../namedError'
+import { XPubKey } from '../transaction/transaction'
 import { TxCertificateKeys, _Certificate, _TxAux } from '../transaction/types'
 import {
   Address,
@@ -31,15 +32,19 @@ const isShelleyPath = (path: number[]) => path[0] - HARDENED_THRESHOLD === 1852
 const isStakingPath = (path: number[]) => path[3] === 2
 
 const encodeAddress = (address: Buffer): string => {
-  if (getAddressType(address) === AddressTypes.BOOTSTRAP) {
+  const addressType = getAddressType(address)
+  if (addressType === AddressTypes.BOOTSTRAP) {
     return base58.encode(address)
   }
-  const prefixes: {[key: number]: string} = {
-    [NetworkIds.MAINNET]: 'addr',
-    [NetworkIds.TESTNET]: 'addr_test',
+  const addressPrefixes: {[key: number]: string} = {
+    [AddressTypes.BASE]: 'addr',
+    [AddressTypes.POINTER]: 'addr',
+    [AddressTypes.ENTERPRISE]: 'addr',
+    [AddressTypes.REWARD]: 'stake',
   }
-  const networkId = getShelleyAddressNetworkId(address)
-  return bech32.encode(prefixes[networkId], address)
+  const isTestnet = getShelleyAddressNetworkId(address) === NetworkIds.TESTNET
+  const addressPrefix = `${addressPrefixes[addressType]}${isTestnet ? '_test' : ''}`
+  return bech32.encode(addressPrefix, address)
 }
 
 const getSigningPath = (
@@ -64,14 +69,15 @@ const filterSigningFiles = (
   }
 }
 
-const findSigningPath = (certPubKeyHash: Buffer, stakingSigningFiles: HwSigningData[]) => {
+const findSigningPath = (
+  certPubKeyHash: Buffer, stakingSigningFiles: HwSigningData[]
+): BIP32Path | undefined => {
   const signingFile = stakingSigningFiles.find((file) => {
     const { pubKey } = XPubKey(file.cborXPubKeyHex)
     const pubKeyHash = getPubKeyBlake2b224Hash(pubKey)
     return !Buffer.compare(pubKeyHash, certPubKeyHash)
   })
-  if (!signingFile) throw NamedError('MissingSigningFileError')
-  return signingFile.path
+  return signingFile?.path
 }
 
 const txHasPoolPoolRegistrationCert = (
