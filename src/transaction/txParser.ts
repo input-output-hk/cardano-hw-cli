@@ -127,8 +127,8 @@ const parseTxWithdrawals = (
 const parseUnsignedTx = ([txBody, meta]: _UnsignedTxDecoded): _UnsignedTxParsed => {
   const inputs = parseTxInputs(txBody.get(TxBodyKeys.INPUTS))
   const outputs = parseTxOutputs(txBody.get(TxBodyKeys.OUTPUTS))
-  const fee = `${txBody.get(TxBodyKeys.FEE)}`
-  const ttl = `${txBody.get(TxBodyKeys.TTL)}`
+  const fee = txBody.get(TxBodyKeys.FEE) as number
+  const ttl = txBody.get(TxBodyKeys.TTL) as number
   const certificates = parseTxCerts(
     txBody.get(TxBodyKeys.CERTIFICATES) || [],
   )

@@ -114,8 +114,8 @@ export type _Withdrawal = {
 export type _UnsignedTxParsed = {
   inputs: _Input[],
   outputs: _Output[],
-  fee: string,
-  ttl: string,
+  fee: number,
+  ttl: number,
   certificates: _Certificate[],
   withdrawals: _Withdrawal[],
   metaDataHash?: Buffer,
@@ -177,13 +177,8 @@ export type _ShelleyWitness = {
   data: TxWitnessShelley,
 }
 
-export const enum WitnessOutputTypes {
-  SHELLEY = 'TxWitnessShelley',
-  BYRON = 'TxWitnessByron',
-}
-
 export type WitnessOutput = {
-  type: WitnessOutputTypes
+  type: string
   description: '',
   cborHex: TxWitnessCborHex,
 }

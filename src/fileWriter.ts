@@ -1,10 +1,10 @@
 import { HARDENED_THRESHOLD } from './constants'
+import { isStakingPath } from './crypto-providers/util'
 import {
   SignedTxCborHex,
   SignedTxOutput,
   TxWitnessKeys,
   WitnessOutput,
-  WitnessOutputTypes,
   XPubKeyHex,
   _ByronWitness,
   _ShelleyWitness,
@@ -34,11 +34,12 @@ const TxSignedOutput = (signedTxCborHex: SignedTxCborHex): SignedTxOutput => ({
 const TxWitnessOutput = (
   { key, data }: _ByronWitness | _ShelleyWitness,
 ): WitnessOutput => {
-  const type = key === TxWitnessKeys.SHELLEY
-    ? WitnessOutputTypes.SHELLEY
-    : WitnessOutputTypes.BYRON
+  const witnessTypes: {[key: number]: string} = {
+    [TxWitnessKeys.SHELLEY]: 'TxWitnessShelley',
+    [TxWitnessKeys.BYRON]: 'TxWitnessByron',
+  }
   return {
-    type,
+    type: witnessTypes[key],
     description: '',
     cborHex: cbor.encode([key, data]).toString('hex'),
   }
@@ -49,9 +50,9 @@ const PathOutput = (path: BIP32Path): string => path
   .join('/')
 
 const HwSigningKeyOutput = (xPubKey: XPubKeyHex, path: BIP32Path): HwSigningOutput => {
-  const type = path[3] === 0 ? 'Payment' : 'Stake'
+  const type = isStakingPath(path) ? 'Stake' : 'Payment'
   return {
-    type: `${type}HWSigningFileShelley_ed25519`, // TODO
+    type: `${type}HWSigningFileShelley_ed25519`,
     description: `${type} Hardware Signing File`,
     path: PathOutput(path),
     cborXPubKeyHex: cbor.encode(Buffer.from(xPubKey, 'hex')).toString('hex'),
@@ -59,10 +60,11 @@ const HwSigningKeyOutput = (xPubKey: XPubKeyHex, path: BIP32Path): HwSigningOutp
 }
 
 const HwVerificationKeyOutput = (xPubKey: XPubKeyHex, path: BIP32Path): VerificationKeyOutput => {
-  const pubKey = Buffer.from(xPubKey, 'hex').slice(-64).slice(0, 32) // TODO
-  const type = path[3] === 0 ? 'Payment' : 'Stake'
+  // to get pub key also from cbor encoded xpub
+  const pubKey = Buffer.from(xPubKey, 'hex').slice(-64).slice(0, 32)
+  const type = isStakingPath(path) ? 'Stake' : 'Payment'
   return {
-    type: `${type}VerificationKeyShelley_ed25519`, // TODO
+    type: `${type}VerificationKeyShelley_ed25519`,
     description: `${type} Verification Key`,
     cborHex: cbor.encode(pubKey).toString('hex'),
   }

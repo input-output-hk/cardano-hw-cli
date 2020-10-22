@@ -25,8 +25,8 @@ const transactions = {
           coins: 3003112,
         },
       ],
-      fee: '42',
-      ttl: '10',
+      fee: 42,
+      ttl: 10,
       certificates: [],
       withdrawals: [
         {
@@ -72,8 +72,8 @@ const transactions = {
           coins: 3003112,
         },
       ],
-      fee: '42',
-      ttl: '10',
+      fee: 42,
+      ttl: 10,
       certificates: [{
         type: 0,
         pubKeyHash: Buffer.from('1d227aefa4b773149170885aadba30aab3127cc611ddbc4999def61c', 'hex'),
@@ -118,8 +118,8 @@ const transactions = {
           coins: 3003112,
         },
       ],
-      fee: '42',
-      ttl: '10',
+      fee: 42,
+      ttl: 10,
       certificates: [{
         type: 2,
         pubKeyHash: Buffer.from('1d227aefa4b773149170885aadba30aab3127cc611ddbc4999def61c', 'hex'),
@@ -164,8 +164,8 @@ const transactions = {
           coins: 3003112,
         },
       ],
-      fee: '42',
-      ttl: '10',
+      fee: 42,
+      ttl: 10,
       certificates: [{
         type: 1,
         pubKeyHash: Buffer.from('1d227aefa4b773149170885aadba30aab3127cc611ddbc4999def61c', 'hex'),
@@ -209,8 +209,8 @@ const transactions = {
           coins: 3003112,
         },
       ],
-      fee: '42',
-      ttl: '10',
+      fee: 42,
+      ttl: 10,
       certificates: [],
       withdrawals: [],
       metaDataHash: Buffer.from('deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', 'hex'),
@@ -243,8 +243,8 @@ const transactions = {
           coins: 1,
         },
       ],
-      fee: '42',
-      ttl: '10',
+      fee: 42,
+      ttl: 10,
       certificates: [
         {
           type: 3,

@@ -70,7 +70,7 @@ const filterSigningFiles = (
 }
 
 const findSigningPath = (
-  certPubKeyHash: Buffer, stakingSigningFiles: HwSigningData[]
+  certPubKeyHash: Buffer, stakingSigningFiles: HwSigningData[],
 ): BIP32Path | undefined => {
   const signingFile = stakingSigningFiles.find((file) => {
     const { pubKey } = XPubKey(file.cborXPubKeyHex)
@@ -228,8 +228,24 @@ const getAddressAttributes = (address: Address) => {
   return { addressType, networkId, protocolMagic }
 }
 
+const ipv4ToString = (ipv4: Buffer | undefined): string | undefined => {
+  if (!ipv4) return undefined
+  return new Uint8Array(ipv4).join('.')
+}
+const ipv6ToString = (ipv6: Buffer | undefined): string | undefined => {
+  if (!ipv6) return undefined
+  const _ipv6LE = []
+  for (let i = 0; i < 16; i += 4) {
+    _ipv6LE.push(Buffer.from(new Uint32Array([ipv6.readUInt32BE(i)]).buffer))
+  }
+  // concats the little endians to Buffer and divides the hex string to foursomes
+  const ipv6LE = Buffer.concat(_ipv6LE).toString('hex').match(/.{1,4}/g)
+  return ipv6LE ? ipv6LE.join(':') : undefined
+}
+
 export {
   isShelleyPath,
+  isStakingPath,
   validateSigning,
   validateWitnessing,
   getSigningPath,
@@ -238,4 +254,6 @@ export {
   encodeAddress,
   getChangeAddress,
   getAddressAttributes,
+  ipv4ToString,
+  ipv6ToString,
 }
