@@ -32,7 +32,7 @@
   "homepage": "https://github.com/vacuumlabs/cardano-hw-cli#readme",
   "dependencies": {
     "@babel/runtime": "^7.11.2",
-    "@cardano-foundation/ledgerjs-hw-app-cardano": "^2.0.1",
+    "@cardano-foundation/ledgerjs-hw-app-cardano": "https://github.com/vacuumlabs/ledgerjs-cardano-shelley/releases/download/v2.0.2-rc.0/cardano-foundation-ledgerjs-hw-app-cardano-2.0.1.tgz",
     "@ledgerhq/hw-transport-node-hid": "^5.25.0",
     "argparse": "^2.0.1",
     "borc": "^2.1.2",
@@ -40,13 +40,13 @@
     "trezor-connect": "^8.1.16-extended"
   },
   "devDependencies": {
-    "nexe": "^3.3.7",
     "@typescript-eslint/eslint-plugin": "^4.2.0",
     "@typescript-eslint/parser": "^4.2.0",
     "eslint": "^7.9.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.21.2",
     "mocha": "^8.1.3",
+    "nexe": "^3.3.7",
     "pkg": "^4.4.9",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.3"
