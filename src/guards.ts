@@ -21,7 +21,7 @@ const isString = (test: any): test is string => test && typeof test === 'string'
 export const isBIP32Path = (
   test: any,
 ): test is BIP32Path => Array.isArray(test)
-  && test.every((element) => typeof element === 'number')
+  && test.every((element) => Number.isInteger(element))
 
 export const isHwSigningData = (
   test: any,

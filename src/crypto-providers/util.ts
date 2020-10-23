@@ -217,7 +217,7 @@ const getAddressAttributes = (address: Address) => {
     protocolMagic = getBootstrapAddressProtocolMagic(addressBuffer)
     networkId = NETWORKS.MAINNET.protocolMagic === protocolMagic
       ? NETWORKS.MAINNET.networkId
-      : NETWORKS.TESTNET.protocolMagic
+      : NETWORKS.TESTNET.networkId
   } else if (isValidShelleyAddress(address)) {
     networkId = getShelleyAddressNetworkId(addressBuffer)
     protocolMagic = NETWORKS.MAINNET.networkId === networkId
@@ -234,7 +234,7 @@ const ipv4ToString = (ipv4: Buffer | undefined): string | undefined => {
 }
 const ipv6ToString = (ipv6: Buffer | undefined): string | undefined => {
   if (!ipv6) return undefined
-  const _ipv6LE = []
+  const _ipv6LE: Buffer[] = []
   for (let i = 0; i < 16; i += 4) {
     _ipv6LE.push(Buffer.from(new Uint32Array([ipv6.readUInt32BE(i)]).buffer))
   }
@@ -242,6 +242,8 @@ const ipv6ToString = (ipv6: Buffer | undefined): string | undefined => {
   const ipv6LE = Buffer.concat(_ipv6LE).toString('hex').match(/.{1,4}/g)
   return ipv6LE ? ipv6LE.join(':') : undefined
 }
+
+const rewardAddressToPubKeyHash = (address: Buffer) => address.slice(1)
 
 export {
   isShelleyPath,
@@ -256,4 +258,5 @@ export {
   getAddressAttributes,
   ipv4ToString,
   ipv6ToString,
+  rewardAddressToPubKeyHash,
 }

@@ -44,10 +44,11 @@ import {
   getSigningPath,
   ipv4ToString,
   ipv6ToString,
+  rewardAddressToPubKeyHash,
 } from './util'
 import NamedError from '../namedError'
 
-const TrezorConnect = require('../../trezor-extended').default
+import TrezorConnect from '../../trezor-extended/lib'
 
 const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
   TrezorConnect.manifest({
@@ -226,7 +227,7 @@ const TrezorCryptoProvider: () => Promise<CryptoProvider> = async () => {
   const prepareWithdrawal = (
     withdrawal: _Withdrawal, stakeSigningFiles: HwSigningData[],
   ): TrezorWithdrawal => {
-    const pubKeyHash = withdrawal.address.slice(1) // TODO: helper
+    const pubKeyHash = rewardAddressToPubKeyHash(withdrawal.address)
     const path = findSigningPath(pubKeyHash, stakeSigningFiles)
     if (!path) throw NamedError('MissingSigningFileForWithdrawalError')
     return {

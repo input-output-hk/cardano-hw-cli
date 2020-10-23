@@ -56,6 +56,7 @@ import {
   getSigningPath,
   isShelleyPath,
   getAddressAttributes,
+  rewardAddressToPubKeyHash,
 } from './util'
 
 const TransportNodeHid = require('@ledgerhq/hw-transport-node-hid').default
@@ -236,7 +237,7 @@ export const LedgerCryptoProvider: () => Promise<CryptoProvider> = async () => {
   const prepareWithdrawal = (
     withdrawal: _Withdrawal, stakeSigningFiles: HwSigningData[],
   ): LedgerWithdrawal => {
-    const pubKeyHash = withdrawal.address.slice(1)
+    const pubKeyHash = rewardAddressToPubKeyHash(withdrawal.address)
     const path = findSigningPath(pubKeyHash, stakeSigningFiles)
     if (!path) throw NamedError('MissingSigningFileForWithdrawalError')
     return {

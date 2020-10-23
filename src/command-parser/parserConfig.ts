@@ -12,13 +12,13 @@ const txSigningArgs = {
     dest: 'network',
     const: parseNetwork('MAINNET'),
     default: parseNetwork('MAINNET'),
-    help: 'Use the mainnet magic id.',
+    help: 'NETWORK.',
   },
   '--testnet-magic': {
     nargs: '?',
     dest: 'network',
     type: (magic: string) => parseNetwork('TESTNET', magic),
-    help: 'Use the testnet [NETWORK] magic id.',
+    help: 'Protocol magic number.',
   },
   '--tx-body-file': {
     required: true,
@@ -43,7 +43,7 @@ const txSigningArgs = {
   '--out-file': {
     required: true,
     dest: 'outFile',
-    help: 'Output filepath of the Tx.',
+    help: 'Output filepath.',
   },
 }
 

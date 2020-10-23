@@ -65,12 +65,11 @@ export const isDelegationCert = (
 export const isTxSingleHostIPRelay = (
   test: any,
 ): test is TxSingleHostIPRelay => Array.isArray(test)
-  && test.length >= 1
   && test.length <= 4
   && test[0] === TxRelayTypes.SINGLE_HOST_IP
-  && (test.length <= 1 || test[1] === undefined || test[1] === null || Number.isInteger(test[1]))
-  && (test.length <= 2 || test[2] === undefined || test[2] === null || Buffer.isBuffer(test[2]))
-  && (test.length <= 3 || test[3] === undefined || test[3] === null || Buffer.isBuffer(test[3]))
+  && (test[1] === null || Number.isInteger(test[1]))
+  && (test[2] === null || Buffer.isBuffer(test[2]))
+  && (test[3] === null || Buffer.isBuffer(test[3]))
 
 export const isTxSingleHostNameRelay = (
   test: any,
