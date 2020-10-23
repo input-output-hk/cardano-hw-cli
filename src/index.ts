@@ -3,11 +3,12 @@ import { parse } from './command-parser/commandParser'
 import { CommandExecutor } from './commandExecutor'
 import { getErrorTranslation } from './errors'
 import NamedError from './namedError'
-import { CommandType, ParsedArguments } from './types'
+import { CommandType } from './types'
 
 const executeCommand = async (): Promise<void> => {
-  const parsedArgs: ParsedArguments = parse(process.argv)
+  const { parser, parsedArgs } = parse(process.argv)
   if (!Object.values(CommandType).includes(parsedArgs.command)) {
+    parser.print_help()
     return
   }
   const commandExecutor = await CommandExecutor()
