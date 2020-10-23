@@ -86,6 +86,18 @@ export const isTxMultiHostNameRelay = (
   && test[0] === TxRelayTypes.MULTI_HOST_NAME
   && typeof test[1] === 'string'
 
+const isMargin = (test: any) => typeof test === 'object'
+  && 'value' in test
+  && 0 in test.value
+  && Number.isInteger(test.value[0])
+  && 1 in test.value
+  && Number.isInteger(test.value[1])
+
+const isMetaData = (test: any) => Array.isArray(test)
+  && test.length === 2
+  && typeof test[0] === 'string'
+  && Buffer.isBuffer(test[1])
+
 export const isStakepoolRegistrationCert = (
   test: any,
 ): test is TxStakepoolRegistrationCert => Array.isArray(test)
@@ -95,16 +107,8 @@ export const isStakepoolRegistrationCert = (
   && Buffer.isBuffer(test[2])
   && Number.isInteger(test[3])
   && Number.isInteger(test[4])
-  && typeof test[5] === 'object'
-  && 'value' in test[5]
-  && 0 in test[5].value
-  && Number.isInteger(test[5].value[0])
-  && 1 in test[5].value
-  && Number.isInteger(test[5].value[1])
+  && isMargin(test[5])
   && Buffer.isBuffer(test[6])
   && isArrayOfType<Buffer>(test[7], Buffer.isBuffer)
   && Array.isArray(test[8])
-  && Array.isArray(test[9])
-  && test[9].length === 2
-  && typeof test[9][0] === 'string'
-  && Buffer.isBuffer(test[9][1])
+  && isMetaData(test[9])

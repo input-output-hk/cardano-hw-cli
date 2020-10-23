@@ -38,4 +38,4 @@ const executeCommand = async (): Promise<void> => {
 executeCommand().catch((e) => {
   console.log(getErrorTranslation(e))
   console.log(e.stack)
-})
+}).finally(() => process.exit())
