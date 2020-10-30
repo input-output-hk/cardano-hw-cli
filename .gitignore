@@ -1,3 +1,7 @@
 /node_modules
 /dist
 /build
+/trezor-extended
+/build-linux-deb
+/build-linux-tar
+/build-windows-zip

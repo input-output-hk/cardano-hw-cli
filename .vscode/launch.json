@@ -1,0 +1,25 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/src/index.ts",
+            "preLaunchTask": "tsc: build - tsconfig.json",
+            "outFiles": [
+                "${workspaceFolder}/dist/**/*.js"
+            ],
+            "args": ["shelley", "transaction", "sign", "--tx-body-file", "test/integration/trezor/cli/txsFiles/delegationTx/tx.raw", "--hw-signing-file", "test/integration/ledger/cli/keyFiles/byron_payment.hwsfile", "--hw-signing-file", "test/integration/ledger/cli/keyFiles/payment.hwsfile", "--change-output-key-file", "test/integration/ledger/cli/keyFiles/byron_payment.hwsfile", "--mainnet", "--out-file", "tx.signed"]
+            // "args": ["shelley", "transaction", "sign", "--tx-body-file", "test/integration/trezor/cli/txsFiles/delegationTx/tx.raw", "--hw-signing-file", "test/integration/trezor/cli/keyFiles/payment.hwsfile", "--hw-signing-file", "test/integration/trezor/cli/keyFiles/stake.hwsfile", "--mainnet", "--out-file", "tx.signed"]
+        }
+    ]
+}
+
+// "--change-output-key-file", "test/integration/trezor/cli/keyFiles/stake.hwsfile",
